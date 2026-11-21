@@ -126,6 +126,7 @@ export function NewPeopleChat({ lang, mode, agents, onCancel, onOpened }: { lang
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState(0);
   const toggle = (p: PersonInfo) => setPicked((cur) => cur.some((x) => x.id === p.id) ? cur.filter((x) => x.id !== p.id) : mode === "dm" ? [p] : [...cur, p]);
   const submit = async () => {
     setBusy(true); setError("");
@@ -136,21 +137,36 @@ export function NewPeopleChat({ lang, mode, agents, onCancel, onOpened }: { lang
     } catch (e) { setError(e instanceof Error ? e.message : "Failed"); } finally { setBusy(false); }
   };
   const ready = mode === "dm" ? picked.length === 1 : name.trim().length > 0 && picked.length + bots.length > 0;
-  return <section className="pp-panel">
-    <header className="pp-panel-head"><button type="button" className="pp-icon" aria-label="Back" onClick={onCancel}><ChevronLeft size={20} /></button><h2>{mode === "dm" ? (ar ? "رسالة جديدة" : "New message") : (ar ? "جروب جديد" : "New group")}</h2></header>
+  const isGroup = mode === "group";
+  const naming = isGroup && stage === 1;
+  const back = () => naming ? setStage(0) : onCancel();
+  return <section className="pp-panel pp-new">
+    <header className="pp-panel-head"><button type="button" className="pp-icon" aria-label="Back" onClick={back}><ChevronLeft size={20} /></button>
+      <h2>{!isGroup ? "New message" : naming ? "New group" : "Add members"}{isGroup && !naming && <small className="pp-new-count">{picked.length + bots.length} selected</small>}</h2></header>
     <UsernameGate lang={lang}>
-      {mode === "group" && <label className="pp-field"><input value={name} onChange={(e) => setName(e.target.value)} placeholder={ar ? "اسم الجروب" : "Group name"} maxLength={80} /></label>}
-      {picked.length > 0 && <div className="pp-chips">{picked.map((p) => <button type="button" key={p.id} className="pp-chip" onClick={() => toggle(p)}>@{p.username}<X size={14} /></button>)}</div>}
-      <PeoplePicker lang={lang} picked={picked} onPick={toggle} />
-      {mode === "group" && agents.length > 0 && <>
-        <h3 className="pp-sub">{ar ? "ضيف بوتات" : "Add bots"}</h3>
-        <div className="pp-results">{agents.map((a) => {
-          const on = bots.includes(a.id);
-          return <button type="button" key={a.id} className="pp-result" data-on={on} onClick={() => setBots((cur) => on ? cur.filter((x) => x !== a.id) : [...cur, a.id])}><BotAvatar agent={a} size={32} /><span><strong>{a.name}</strong><small>{a.description}</small></span>{on && <Check size={16} />}</button>;
-        })}</div>
+      {(picked.length > 0 || bots.length > 0) && <div className="pp-new-chosen">
+        {picked.map((p) => <button type="button" key={p.id} onClick={() => !naming && toggle(p)}><span className="pp-new-av"><PersonAvatar person={p} size={46} />{!naming && <i><X size={11} /></i>}</span><small>{p.displayName || p.username}</small></button>)}
+        {bots.map((id) => { const a = agents.find((x) => x.id === id); return a ? <button type="button" key={id} onClick={() => !naming && setBots((c) => c.filter((x) => x !== id))}><span className="pp-new-av"><BotAvatar agent={a} size={46} />{!naming && <i><X size={11} /></i>}</span><small>{a.name}</small></button> : null; })}
+      </div>}
+      {naming ? <>
+        <label className="pp-field pp-new-name"><input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Group name" maxLength={80} /><small>{80 - name.length}</small></label>
+        <p className="pp-muted">Members: {picked.length + bots.length}</p>
+      </> : <>
+        <PeoplePicker lang={lang} picked={picked} onPick={toggle} />
+        {isGroup && agents.length > 0 && <>
+          <h3 className="pp-sub">Bots</h3>
+          <div className="pp-results">{agents.map((a) => {
+            const on = bots.includes(a.id);
+            return <button type="button" key={a.id} className="pp-result" data-on={on} onClick={() => setBots((cur) => on ? cur.filter((x) => x !== a.id) : [...cur, a.id])}><BotAvatar agent={a} size={32} /><span><strong>{a.name}</strong><small>{a.description}</small></span><span className="pp-check" data-on={on}>{on && <Check size={14} />}</span></button>;
+          })}</div>
+        </>}
       </>}
       {error && <p className="pp-error" role="alert">{userErrorText(error)}</p>}
-      <button type="button" className="pp-primary" disabled={!ready || busy} onClick={() => void submit()}>{mode === "dm" ? (ar ? "ابدأ المحادثة" : "Start chat") : (ar ? "إنشاء الجروب" : "Create group")}</button>
+      {isGroup && !naming
+        ? <button type="button" className="pp-fab" aria-label="Next" disabled={picked.length + bots.length === 0} onClick={() => setStage(1)}><ArrowUp size={22} style={{ transform: "rotate(90deg)" }} /></button>
+        : isGroup
+          ? <button type="button" className="pp-fab" aria-label="Create group" disabled={!ready || busy} onClick={() => void submit()}><Check size={24} /></button>
+          : <button type="button" className="pp-primary" disabled={!ready || busy} onClick={() => void submit()}>Start chat</button>}
     </UsernameGate>
   </section>;
 }

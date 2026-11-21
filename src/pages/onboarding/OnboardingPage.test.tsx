@@ -5,7 +5,7 @@ vi.mock("react-router-dom", () => ({ useNavigate: () => mocks.nav }));
 vi.mock("@/lib/theme", () => ({ forceDarkTheme: () => {} }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {
   auth: { getUser: mocks.getUser }, rpc: mocks.rpc,
-  from: () => ({ select: () => ({ eq: () => ({ maybeSingle: mocks.profile }) }) }),
+  from: () => ({ select: () => ({ eq: () => ({ maybeSingle: mocks.profile }) }), update: () => ({ eq: async () => ({ error: null }) }) }),
 } }));
 vi.mock("@/pages/agent/hub/HubPanels", () => ({ AgentForm: ({ onSubmit }: { onSubmit: (v: object) => void }) =>
   <button onClick={() => onSubmit({ name: "Sam", description: "", prompt: "Help", look: {} })}>Create</button>,
@@ -26,12 +26,12 @@ describe("first-run recovery", () => {
   });
   it("saves setup through one atomic operation and allows retry after failure", async () => {
     mocks.getUser.mockResolvedValue({ data: { user: { id: "user" } }, error: null });
-    mocks.profile.mockResolvedValue({ data: { display_name: "Test", onboarding_completed: false }, error: null });
+    mocks.profile.mockResolvedValue({ data: { display_name: "Test", username: "tester", onboarding_completed: false }, error: null });
     mocks.rpc.mockResolvedValueOnce({ data: null, error: { message: "Failed" } }).mockResolvedValueOnce({ data: "same-bot", error: null });
     render(<OnboardingPage />);
     await screen.findByPlaceholderText("Your name");
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-    fireEvent.click(screen.getByRole("button", { name: "Developer" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Developer" }));
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
     await waitFor(() => expect(mocks.rpc).toHaveBeenCalledTimes(1));
@@ -40,5 +40,16 @@ describe("first-run recovery", () => {
     await waitFor(() => expect(mocks.nav).toHaveBeenCalledWith("/", { replace: true }));
     expect(mocks.rpc.mock.calls[0][0]).toBe("complete_onboarding");
     expect(mocks.rpc.mock.calls[1][0]).toBe("complete_onboarding");
+  });
+  it("requires a valid username before continuing", async () => {
+    mocks.getUser.mockResolvedValue({ data: { user: { id: "user" } }, error: null });
+    mocks.profile.mockResolvedValue({ data: { display_name: "Test", onboarding_completed: false }, error: null });
+    render(<OnboardingPage />);
+    const input = await screen.findByLabelText("Username");
+    expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
+    fireEvent.change(input, { target: { value: "ab" } });
+    expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
+    fireEvent.change(input, { target: { value: "sam_1" } });
+    expect(screen.getByRole("button", { name: "Continue" })).not.toBeDisabled();
   });
 });

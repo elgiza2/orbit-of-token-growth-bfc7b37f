@@ -8,6 +8,7 @@ import { AgentForm, type AgentFormValue } from "@/pages/agent/hub/HubPanels";
 import { Button } from "@/components/ui/button";
 import "@/styles/onboarding.css";
 import { toAvatar } from "@/lib/profile/avatar";
+import { peopleApi, normalizeUsername, USERNAME_RE } from "@/lib/people/peopleApi";
 
 const TYPES = [
   { id: "developer", t: "Developer", I: Code2 },
@@ -57,6 +58,9 @@ export default function OnboardingPage() {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [age, setAge] = useState(22);
   const [type, setType] = useState("");
+  const [username, setUsername] = useState("");
+  const [hadUsername, setHadUsername] = useState(false);
+  const [invites, setInvites] = useState<"everyone" | "contacts" | "nobody">("everyone");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
@@ -74,7 +78,7 @@ export default function OnboardingPage() {
         if (!alive) return;
         if (error) throw error;
         if (!data.user) return nav("/auth?mode=signup", { replace: true });
-        const { data: p, error: profileError } = await supabase.from("profiles").select("display_name,avatar_url,onboarding_completed").eq("id", data.user.id).maybeSingle();
+        const { data: p, error: profileError } = await supabase.from("profiles").select("display_name,avatar_url,onboarding_completed,username").eq("id", data.user.id).maybeSingle();
         if (profileError || !p) throw new Error("Profile unavailable");
         if (!alive) return;
         if (p.onboarding_completed) return nav("/", { replace: true });
@@ -84,11 +88,24 @@ export default function OnboardingPage() {
         setUid(data.user.id);
         if (p.display_name) setName(p.display_name);
         if (p.avatar_url) setAvatar(p.avatar_url);
+        if (p.username) { setUsername(p.username); setHadUsername(true); }
       } catch { if (alive) setLoadError("Couldn't load your account. Try again."); }
       finally { if (alive) setLoading(false); }
     })();
     return () => { alive = false; };
   }, [nav, retry]);
+
+  const saveIdentity = async () => {
+    if (!uid || busy) return;
+    setBusy(true); setErr("");
+    try {
+      if (!hadUsername) { await peopleApi.setUsername(username); setHadUsername(true); }
+      const { error } = await supabase.from("profiles").update({ group_invites: invites } as never).eq("id", uid);
+      if (error) throw error;
+      setStep(1);
+    } catch (e) { setErr(e instanceof Error && /taken|exist|duplicate/i.test(e.message) ? "That username is taken. Try another." : "Couldn't save. Try again."); }
+    finally { setBusy(false); }
+  };
 
   const finish = async (v: AgentFormValue) => {
     if (!uid || busy) return;
@@ -135,9 +152,15 @@ export default function OnboardingPage() {
             <input ref={file} type="file" accept="image/*" hidden onChange={async (e) => { const f = e.target.files?.[0]; if (f) { try { setAvatar(await toAvatar(f)); setErr(""); } catch { setErr("Couldn't open this photo. Choose another image."); } } }} />
             {err && <p role="alert">{err}</p>}
             <input className="ob-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" maxLength={40} />
+            <label className="ob-user"><span>@</span><input value={username} onChange={(e) => setUsername(normalizeUsername(e.target.value))} placeholder="username" autoCapitalize="none" autoCorrect="off" maxLength={20} disabled={hadUsername} aria-label="Username" /></label>
+            <p className="ob-hint">{hadUsername ? "Your username" : "3–20 lowercase letters, numbers or _. People find you with it."}</p>
+            <p className="ob-label">Who can add you to groups?</p>
+            <div className="ob-seg" role="radiogroup" aria-label="Who can add you to groups">
+              {([["everyone", "Everyone"], ["contacts", "People I chat with"], ["nobody", "Nobody"]] as const).map(([v, t]) => <button type="button" key={v} role="radio" aria-checked={invites === v} className={invites === v ? "on" : ""} onClick={() => setInvites(v)}>{t}</button>)}
+            </div>
             <p className="ob-label">How old are you?</p>
             <AgeWheel value={age} onChange={setAge} />
-            <Button variant="neutral" className="ob-btn" disabled={name.trim().length < 2} onClick={() => setStep(1)}>Continue</Button>
+            <Button variant="neutral" className="ob-btn" disabled={busy || name.trim().length < 2 || !USERNAME_RE.test(username)} onClick={() => void saveIdentity()}>{busy ? "Saving…" : "Continue"}</Button>
           </>
         )}
         {step === 1 && (

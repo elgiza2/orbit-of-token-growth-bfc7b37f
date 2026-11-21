@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.can_add_to_group(uuid, uuid) FROM authenticated;
