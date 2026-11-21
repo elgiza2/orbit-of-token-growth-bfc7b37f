@@ -28,4 +28,17 @@ self.addEventListener("fetch", event => {
     }
     return response;
   })());
+});/* Tapping a system notification opens (or focuses) the app on the linked screen. Same-origin paths only. */
+self.addEventListener("notificationclick", event => {
+  event.notification.close();
+  const raw = event.notification.data && event.notification.data.url;
+  const path = typeof raw === "string" && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+  event.waitUntil((async () => {
+    const target = new URL(path, self.location.origin).href;
+    const open = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const client of open) {
+      if (new URL(client.url).origin === self.location.origin) { await client.focus(); if ("navigate" in client) await client.navigate(target).catch(() => {}); return; }
+    }
+    await self.clients.openWindow(target);
+  })());
 });

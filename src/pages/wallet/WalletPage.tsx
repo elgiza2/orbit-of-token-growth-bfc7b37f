@@ -124,8 +124,8 @@ export default function WalletPage() {
           <header className="wl-top"><button type="button" className="wl-round" aria-label="Close" onClick={() => setView("home")}><X size={20} /></button><h2 className="wl-title">Send</h2></header>
           <label className="wl-search"><Search size={18} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" /></label>
           <div style={{ height: 14 }} />
-          {rows(filtered)}
-          {filtered.length === 0 && <p className="wl-note">{walletError || !addresses ? "Balance unavailable. Please wait or try again." : q ? "No coins match your search." : "You have no balance to send yet."}</p>}
+          {rows(filtered.filter((t) => !t.receiveOnly))}
+          {filtered.filter((t) => !t.receiveOnly).length === 0 && <p className="wl-note">{walletError || !addresses ? "Balance unavailable. Please wait or try again." : q ? "No coins match your search." : "You have no balance to send yet."}</p>}
           </>}
         </>
       )}

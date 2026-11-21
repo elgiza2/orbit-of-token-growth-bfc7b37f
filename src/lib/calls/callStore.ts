@@ -13,7 +13,8 @@ const settled = new Set<string>();
 const set = (p: Partial<State>) => { state = { ...state, ...p }; subs.forEach((f) => f()); };
 
 export const calls = {
-  start(c: Omit<ActiveCall, "key">) { set({ active: { ...c, key: crypto.randomUUID() }, minimized: false }); },
+  /** A second tap while a call is open just brings it back instead of starting an overlapping call. */
+  start(c: Omit<ActiveCall, "key">) { if (state.active) { if (state.minimized) set({ minimized: false }); return; } set({ active: { ...c, key: crypto.randomUUID() }, minimized: false }); },
   end() { set({ active: null, minimized: false }); },
   minimize(minimized: boolean) { set({ minimized }); },
   ring(c: IncomingCall) { if (!settled.has(c.callId) && !state.active && !state.incoming) set({ incoming: c }); },

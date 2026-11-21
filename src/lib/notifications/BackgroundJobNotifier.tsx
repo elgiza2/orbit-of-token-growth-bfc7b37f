@@ -2,8 +2,9 @@ import { getCachedUser } from "@/lib/cachedUser";
 import { useEffect, useRef } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { ensureNotificationPermission, notifyJobComplete } from "@/lib/notifyJobComplete";
+import { ensureNotificationPermission, notifyJobComplete, showSystemNotification } from "@/lib/notifyJobComplete";
 import { claimNotification, markNotified } from "@/lib/notifications/dedupe";
+import { previewText } from "@/lib/ceyo/phonePush";
 import { hasPhoneAssistant, phoneLiveEnd, phoneReply } from "@/lib/native/assistantBridge";
 
 /**
@@ -33,6 +34,7 @@ const KIND_LABEL: Record<string, { label: string; kind: Kind; url?: string }> = 
 
 const POLL_MS = 30_000;
 
+
 export default function BackgroundJobNotifier() {
   const seen = useRef<Set<string>>(new Set());
 
@@ -41,6 +43,7 @@ export default function BackgroundJobNotifier() {
     let userId: string | null = null;
     let jobChannel: ReturnType<typeof supabase.channel> | null = null;
     let runChannel: ReturnType<typeof supabase.channel> | null = null;
+    let messageChannel: ReturnType<typeof supabase.channel> | null = null;
     let timer: number | undefined;
 
     const announceJob = async (row: any) => {
@@ -164,6 +167,45 @@ export default function BackgroundJobNotifier() {
         )
         .subscribe();
 
+      // New messages from people and finished bot replies become system notifications (web only;
+      // the Android app receives the same events as phone pushes from the server).
+      if (!hasPhoneAssistant()) {
+        const names = new Map<string, string>();
+        const personName = async (id: string) => {
+          if (names.has(id)) return names.get(id)!;
+          const { data } = await supabase.from("profiles").select("display_name,username").eq("id", id).maybeSingle();
+          const p = data as { display_name?: string | null; username?: string | null } | null;
+          const name = p?.display_name || (p?.username ? `@${p.username}` : "Ceyo");
+          names.set(id, name);
+          return name;
+        };
+        const botName = async (id: string | null) => {
+          if (!id) return "Ceyo";
+          if (names.has(`bot:${id}`)) return names.get(`bot:${id}`)!;
+          const { data } = await supabase.from("bots").select("name").eq("id", id).maybeSingle();
+          const name = (data as { name?: string } | null)?.name || "Ceyo";
+          names.set(`bot:${id}`, name);
+          return name;
+        };
+        messageChannel = supabase
+          .channel(`messages-notify-${userId}-${instanceId}`)
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "people_messages" }, (payload) => {
+            const row = payload.new as { id?: string; sender_id?: string | null; bot_id?: string | null; content?: string };
+            if (!row?.id || row.sender_id === userId) return;
+            const text = previewText(row.content || "");
+            if (!text) return;
+            void (row.sender_id ? personName(row.sender_id) : botName(row.bot_id ?? null)).then((title) => showSystemNotification({ id: `pm:${row.id}`, title, body: text, onClickUrl: "/" }));
+          })
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `user_id=eq.${userId}` }, (payload) => {
+            const row = payload.new as { id?: string; role?: string; bot_id?: string | null; content?: string; metadata?: { incomplete?: boolean } | null };
+            if (!row?.id || row.role !== "assistant" || row.metadata?.incomplete) return;
+            const text = previewText(row.content || "");
+            if (!text) return;
+            void botName(row.bot_id ?? null).then((title) => showSystemNotification({ id: `msg:${row.id}`, title, body: text, onClickUrl: row.bot_id ? "/?chat=" + encodeURIComponent("bot:" + row.bot_id) : "/" }));
+          })
+          .subscribe();
+      }
+
       timer = window.setInterval(() => void sweep(), POLL_MS);
     };
 
@@ -179,6 +221,7 @@ export default function BackgroundJobNotifier() {
       if (timer) window.clearInterval(timer);
       if (jobChannel) void supabase.removeChannel(jobChannel);
       if (runChannel) void supabase.removeChannel(runChannel);
+      if (messageChannel) void supabase.removeChannel(messageChannel);
     };
   }, []);
 

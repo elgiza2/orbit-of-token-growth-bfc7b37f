@@ -219,9 +219,11 @@ export function workspaceTools(ctx: Context): AgentTool[] {
     const addresses = await getOrCreateWallet(userId);
     const balances = await walletBalances(addresses) as Record<string, number>;
     const ids = Object.keys(balances);
+    const { WALLET_TOKENS: listed } = await import("@/pages/wallet/walletTokens");
+    const priceOf = (id: string) => listed.find((t) => t.id === id)?.priceId ?? id;
     let prices: Record<string, { usd?: number; usd_24h_change?: number }> = {};
-    try { prices = await (await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(",")}&vs_currencies=usd&include_24hr_change=true`, { signal: AbortSignal.timeout(8000) })).json(); } catch { /* prices optional */ }
-    const assets = ids.map((id) => { const amount = Number(balances[id]) || 0; const price = prices[id]?.usd ?? null; const change = prices[id]?.usd_24h_change ?? null; return { id, amount, usd: price === null ? null : amount * price, change24h: change }; });
+    try { prices = await (await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${[...new Set(ids.map(priceOf))].join(",")}&vs_currencies=usd&include_24hr_change=true`, { signal: AbortSignal.timeout(8000) })).json(); } catch { /* prices optional */ }
+    const assets = ids.map((id) => { const amount = Number(balances[id]) || 0; const price = prices[priceOf(id)]?.usd ?? null; const change = prices[priceOf(id)]?.usd_24h_change ?? null; return { id, amount, usd: price === null ? null : amount * price, change24h: change }; });
     const total = assets.reduce((n, a) => n + (a.usd || 0), 0);
     const delta = assets.reduce((n, a) => n + (a.usd && a.change24h ? a.usd - a.usd / (1 + a.change24h / 100) : 0), 0);
     return JSON.stringify({ type: "ceyo.widget", widget: "wallet_balance", data: { totalUsd: total, changeUsd24h: delta, assets: assets.filter((a) => a.amount > 0), empty: !assets.some((a) => a.amount > 0) }, addresses });

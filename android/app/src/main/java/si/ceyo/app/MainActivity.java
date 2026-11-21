@@ -49,7 +49,11 @@ public class MainActivity extends BridgeActivity {
         handleLaunch(getIntent());
     }
 
-    @Override public void onResume() { super.onResume(); si.ceyo.app.assistant.Routines.restoreAll(this); }
+    /** True while Ceyo is on screen: message pushes are then not shown, like WhatsApp. */
+    public static volatile boolean onScreen;
+
+    @Override public void onResume() { super.onResume(); onScreen = true; si.ceyo.app.assistant.Routines.restoreAll(this); }
+    @Override public void onPause() { onScreen = false; super.onPause(); }
 
     @Override public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
         super.onRequestPermissionsResult(code, perms, res);

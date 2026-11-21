@@ -16,7 +16,7 @@ export function registerAppServiceWorker(): void {
   if (typeof window === "undefined") return;
   // Remove the retired page-caching worker; fresh HTML and private reads always use the network.
   void unregisterAppSw().then(async () => {
-    if (!("serviceWorker" in navigator) || window.location.hostname !== "app.ceyo.si") return;
+    if (!("serviceWorker" in navigator) || !["app.ceyo.si", "web.ceyo.si"].includes(window.location.hostname)) return;
     try {
       await navigator.serviceWorker.register("/ceyo-assets-sw.js", { scope: "/", updateViaCache: "none" });
     } catch { /* Offline first launch must not prevent the normal application boot. */ }

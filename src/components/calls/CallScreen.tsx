@@ -137,6 +137,7 @@ function VoiceCall({ call, minimized }: { call: ActiveCall; minimized: boolean }
   const [needsTap, setNeedsTap] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const live = useRef<RealtimeCall | null>(null);
+  const connecting = useRef<AbortController | null>(null);
   const turns = useRef<CallTurn[]>([]);
   const followedUp = useRef(false);
   const followUp = () => {
@@ -148,26 +149,30 @@ function VoiceCall({ call, minimized }: { call: ActiveCall; minimized: boolean }
   useEffect(() => {
     if (!choice.voiceId) { if (choice.error) setError(choice.error); return; }
     let cancelled = false; let handle: RealtimeCall | null = null;
-    setError(""); setPhase("connecting");
+    const controller = new AbortController();
+    connecting.current = controller;
+    setError(""); setNeedsTap(false); setPhase("connecting");
     startRealtimeCall({
+      signal: controller.signal,
       voiceId: choice.voiceId, language: choice.language, agentName: call.agent.name, agentPrompt: call.agent.prompt || call.agent.description || "", reason: call.reason,
       onPhase: (p) => { if (!cancelled) { setPhase(p); if (p === "speaking") setError(""); } },
-      onError: (m) => { if (!cancelled) setError(userErrorText(m)); },
+      onError: (m) => { if (!cancelled) { setError(userErrorText(m)); setPhase("ready"); live.current = null; } },
       onTurn: turn => { if (!cancelled) turns.current.push(turn); },
     }).then(async (c) => {
       if (cancelled) { c.end(); return; }
       handle = c; live.current = c;
-      if (!(await c.resumeAudio())) setNeedsTap(true);
+      const resumed = await c.resumeAudio();
+      if (!cancelled) setNeedsTap(!resumed);
     }).catch((e) => {
-      if (cancelled) return;
+      if (cancelled || (e instanceof DOMException && e.name === "AbortError")) return;
       const denied = e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "SecurityError");
       setError(denied ? (ar ? "اسمح للتطبيق باستخدام الميكروفون" : "Allow microphone access to talk") : e instanceof Error ? e.message : "Call unavailable");
       setPhase("ready");
     });
-    return () => { cancelled = true; handle?.end(); live.current = null; };
+    return () => { cancelled = true; controller.abort(); handle?.end(); if (connecting.current === controller) connecting.current = null; if (live.current === handle) live.current = null; };
   }, [choice.voiceId, choice.language, call.key, attempt]);
 
-  const end = () => { live.current?.end(); live.current = null; followUp(); calls.end(); };
+  const end = () => { connecting.current?.abort(); live.current?.end(); live.current = null; calls.end(); followUp(); };
   const status = muted && phase === "listening" ? "muted" : phase === "ready" ? "" : phase;
   return <Shell call={call} minimized={minimized} connected={phase !== "connecting" && phase !== "ready"} status={status}
     controls={<>

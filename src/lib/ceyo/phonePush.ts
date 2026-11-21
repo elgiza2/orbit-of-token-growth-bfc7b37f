@@ -9,3 +9,8 @@ export function pushPayload(p: PhonePush): Record<string, string> {
 }
 
 export const PUSH_TOKEN_PATTERN = /^[A-Za-z0-9_:\-]{20,4096}$/;
+
+/** Plain short preview for a notification: no code/UI blocks, speaker tags, links or markdown marks. */
+export function previewText(text: string): string {
+  return text.replace(/```[\s\S]*?```/g, " ").replace(/\[\[[^\]]*\]\]/g, " ").replace(/!\[[^\]]*\]\([^)]*\)/g, " ").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/[*_#`>]/g, "").replace(/\s+/g, " ").trim().slice(0, 180);
+}

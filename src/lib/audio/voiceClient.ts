@@ -16,7 +16,14 @@ async function voiceFetch(path: string, init: RequestInit = {}) {
 
 let catalogue: Promise<Voice[]> | undefined;
 export function getVoices() {
-  if (!catalogue) catalogue = voiceFetch("/api/voice").then((r) => r.json()).then((d) => d.voices as Voice[]).catch((error) => { catalogue = undefined; throw error; });
+  if (!catalogue) {
+    // Bounded so the call screen never waits forever for the voice list; a failure can be retried.
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    catalogue = voiceFetch("/api/voice", { signal: controller.signal }).then((r) => r.json()).then((d) => d.voices as Voice[])
+      .catch((error) => { catalogue = undefined; throw controller.signal.aborted ? new Error("Voice selection timed out. Please retry.") : error; })
+      .finally(() => clearTimeout(timer));
+  }
   return catalogue;
 }
 
@@ -49,7 +56,7 @@ export function callAudioElement() {
 }
 /** Call from a tap handler before a call starts. */
 export function unlockCallAudio() {
-  try { void audioContext()?.resume(); } catch { /* analysis falls back to the time limit */ }
+  try { void audioContext()?.resume().catch(() => {}); } catch { /* analysis falls back to the time limit */ }
   try { const player = callAudioElement(); player.src = SILENCE; void player.play().catch(() => {}); } catch { /* playback asks for a tap later */ }
 }
 

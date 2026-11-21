@@ -252,14 +252,15 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
     try {
       const m = await peopleApi.send(threadId, withReply(quoted ? splitReply(quoted.content).body : null, content));
       setMessages((cur) => cur.some((x) => x.id === m.id) ? cur : [...cur, m]);
-      if (info.bots.length) {
-        setBotsBusy((n) => n + 1);
-        void peopleApi.askBots(threadId, m.id).catch((e) => setError(userErrorText(e))).finally(() => {
-          setBotsBusy((n) => Math.max(0, n - 1));
-          // Pull replies in case the live update was missed.
-          void peopleApi.messages(threadId).then((list) => setMessages((cur) => { const ids = new Set(list.map((x) => x.id)); return [...list, ...cur.filter((x) => !ids.has(x.id))]; })).catch(() => {});
-        });
-      }
+      // The server notifies the other members' phones and lets the chat's bots answer.
+      const hasBots = info.bots.length > 0;
+      if (hasBots) setBotsBusy((n) => n + 1);
+      void peopleApi.askBots(threadId, m.id).catch((e) => { if (hasBots) setError(userErrorText(e)); }).finally(() => {
+        if (!hasBots) return;
+        setBotsBusy((n) => Math.max(0, n - 1));
+        // Pull replies in case the live update was missed.
+        void peopleApi.messages(threadId).then((list) => setMessages((cur) => { const ids = new Set(list.map((x) => x.id)); return [...list, ...cur.filter((x) => !ids.has(x.id))]; })).catch(() => {});
+      });
     } catch (e) { setText(content); setReplyTo(quoted); setError(e instanceof Error ? e.message : "Not sent"); }
   };
 

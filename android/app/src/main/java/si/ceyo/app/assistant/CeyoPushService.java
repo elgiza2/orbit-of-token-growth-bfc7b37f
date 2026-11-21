@@ -16,8 +16,9 @@ public class CeyoPushService extends FirebaseMessagingService {
             // A finished reply while the app is closed: WhatsApp-style, with inline Reply and Like.
             String text = d.get("text");
             if (text == null || text.trim().isEmpty()) return;
-            CeyoMessage.post(this, String.valueOf(d.get("id")).hashCode(), d.get("botName"), text, CeyoIntents.safePath(d.get("path")));
             CeyoWidget.setStatus(this, d.get("botName"), text);
+            if (si.ceyo.app.MainActivity.onScreen) return;
+            CeyoMessage.post(this, String.valueOf(d.get("id")).hashCode(), d.get("botName"), text, CeyoIntents.safePath(d.get("path")));
         } else if ("update".equals(kind)) {
             CeyoChannels.ensure(this);
             CeyoAlarmReceiver.notify(this, String.valueOf(d.get("id")).hashCode(), CeyoChannels.UPDATES,

@@ -29,7 +29,7 @@ export function cleanSymbol(id: string, symbol: string): string {
 const PP_IDS: Record<string, string> = {
   bitcoin: "btc-bitcoin", ethereum: "eth-ethereum", solana: "sol-solana", binancecoin: "bnb-bnb", tether: "usdt-tether",
   "usd-coin": "usdc-usdc", "the-open-network": "toncoin-the-open-network", "polygon-ecosystem-token": "pol-polygon-ecosystem-token",
-  arbitrum: "arb-arbitrum", "avalanche-2": "avax-avalanche", tron: "trx-tron",
+  arbitrum: "arb-arbitrum", "avalanche-2": "avax-avalanche", tron: "trx-tron", notcoin: "not-notcoin",
 };
 
 /** Symbols learnt from any list, so a coin's details can be found on other sources by symbol. */

@@ -115,6 +115,10 @@ export const Route = createFileRoute("/api/ceyo-chat")({ server: { handlers: {
         const { error } = await db.from("messages").insert({ id: rid, conversation_id: conv.id, user_id: userId, bot_id: conv.bot_id, role: "assistant", content: text.trim(), metadata: { events: events.filter((e) => e.type.startsWith("agent.tool")), transcript: events } as never });
         if (error) throw new Error(error.message);
         await db.from("conversations").update({ updated_at: new Date().toISOString() }).eq("id", conv.id);
+        // Phone notification like WhatsApp; the Android app hides it while the app is open. Never fails the reply.
+        const { previewText } = await import("@/lib/ceyo/phonePush");
+        const preview = previewText(text);
+        if (preview) await (await import("@/lib/ceyo/phonePush.server")).sendPhonePush(userId, { kind: "message", id: rid, botName: bot?.name || "Ceyo", text: preview, path: "/?chat=" + encodeURIComponent(conv.group_id ? "group:" + conv.group_id : "bot:" + (conv.bot_id || "")) });
       } catch (error) {
         failed = true;
         if (events.some(e => e.type === "agent.message" || e.type === "agent.tool_result")) await db.from("messages").insert({ id: rid, conversation_id: conv.id, user_id: userId, bot_id: conv.bot_id, role: "assistant", content: "The task stopped before finishing.", metadata: { incomplete: true, transcript: [...events, { id: `${rid}-incomplete`, type: "agent.message", parts: [{ type: "text", text: "The task stopped before finishing. Progress is saved — say \"continue\" and I'll pick up where I stopped.", stream_id: `${rid}-incomplete` }] }] } as never });

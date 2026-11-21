@@ -2,6 +2,7 @@
  *  non-user-editable auth app_metadata; balances read from free, keyless public endpoints. */
 import { createClient } from "@supabase/supabase-js";
 import { deriveAddresses, newMnemonic, tronFromEvm, type WalletAddresses } from "./derive";
+import { tonBalance, tonJettons } from "./ton";
 
 function admin() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -85,13 +86,14 @@ export async function walletBalances(a: WalletAddresses): Promise<Record<string,
     () => safe(erc20("ethereum", "0xdAC17F958D2ee523a2206206994597C13D831ec7", a.evm, 6)),
     () => safe(erc20("base", "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", a.evm, 6)),
     () => safe(erc20("arbitrum", "0x912CE59144191C1204E64559FE8253a0e49E6548", a.evm, 18)),
-    () => safe(tFetch(`https://toncenter.com/api/v2/getAddressBalance?address=${a.ton}`).then((r) => r.json()).then((j: any) => j.ok === false || j.result === undefined ? NaN : Number(j.result) / 1e9)),
+    () => safe(tonBalance(a.ton, (url) => tFetch(url))),
     () => safe(rpc(EVM_RPC.avalanche, "eth_getBalance", [a.evm, "latest"]).then((h) => hexToNum(h, 18))),
     tron,
+    () => tonJettons(a.ton, (url) => tFetch(url)),
   ];
   // All networks at once, one quick retry each; a network that still fails is left out instead of failing the wallet.
   const settled = await Promise.allSettled(tasks.map((task) => (task as () => Promise<any>)().catch(() => new Promise((r) => setTimeout(r, 400)).then(task))));
-  const [btc, eth, sol, bnb, pol, usdt, usdc, arb, ton, avax, tronAcc] = settled.map((r) => r.status === "fulfilled" ? r.value : undefined);
+  const [btc, eth, sol, bnb, pol, usdt, usdc, arb, ton, avax, tronAcc, jettons] = settled.map((r) => r.status === "fulfilled" ? r.value : undefined);
   const out: Record<string, number> = {};
   const put = (id: string, v: unknown) => { if (typeof v === "number" && Number.isFinite(v)) out[id] = v; };
   put("bitcoin", btc); put("ethereum", eth); put("solana", sol); put("binancecoin", bnb); put("polygon-ecosystem-token", pol); put("tether", usdt); put("usd-coin", usdc); put("arbitrum", arb); put("the-open-network", ton); put("avalanche-2", avax);
@@ -99,6 +101,7 @@ export async function walletBalances(a: WalletAddresses): Promise<Record<string,
     put("tron", Number((tronAcc as any).balance || 0) / 1e6);
     put("tether-tron", Number(((tronAcc as any).trc20 || []).find((t: any) => t.TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t)?.TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t || 0) / 1e6);
   }
+  if (jettons && typeof jettons === "object") for (const [id, v] of Object.entries(jettons as Record<string, number>)) put(id, v);
   if (!Object.keys(out).length) { const first = settled.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined; throw first?.reason instanceof Error ? first.reason : new Error("Balance unavailable"); }
   return out;
 }

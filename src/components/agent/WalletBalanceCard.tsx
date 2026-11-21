@@ -1,7 +1,7 @@
 import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
 
 type Asset = { id: string; amount: number; usd: number | null; change24h: number | null };
-const NAMES: Record<string, string> = { bitcoin: "Bitcoin", ethereum: "Ethereum", solana: "Solana", binancecoin: "BNB", tether: "USDT", "usd-coin": "USDC", "the-open-network": "TON", tron: "TRON", "tether-tron": "USDT (Tron)", "polygon-ecosystem-token": "Polygon", arbitrum: "Arbitrum", "avalanche-2": "Avalanche" };
+const NAMES: Record<string, string> = { bitcoin: "Bitcoin", ethereum: "Ethereum", solana: "Solana", binancecoin: "BNB", tether: "USDT", "usd-coin": "USDC", "the-open-network": "TON", tron: "TRON", "tether-tron": "USDT (Tron)", notcoin: "Notcoin", "tether-ton": "USDT (TON)", "polygon-ecosystem-token": "Polygon", arbitrum: "Arbitrum", "avalanche-2": "Avalanche" };
 const usd = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`;
 
 /** Wallet balance in chat: total, 24h gain/loss and each held coin. */

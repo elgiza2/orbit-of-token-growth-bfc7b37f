@@ -7,12 +7,14 @@ export const WALLET_TOKENS = [
   { id: "tether", symbol: "USDT", name: "Tether", network: "Ethereum" },
   { id: "usd-coin", symbol: "USDC", name: "USD Coin", network: "Base" },
   { id: "the-open-network", symbol: "TON", name: "Toncoin", network: "TON" },
+  { id: "notcoin", symbol: "NOT", name: "Notcoin", network: "TON", receiveOnly: true },
+  { id: "tether-ton", symbol: "USDT", name: "Tether", network: "TON", priceId: "tether", receiveOnly: true },
   { id: "polygon-ecosystem-token", symbol: "POL", name: "Polygon", network: "Polygon" },
   { id: "arbitrum", symbol: "ARB", name: "Arbitrum", network: "Arbitrum" },
   { id: "avalanche-2", symbol: "AVAX", name: "Avalanche", network: "Avalanche" },
   { id: "tron", symbol: "TRX", name: "TRON", network: "Tron" },
   { id: "tether-tron", symbol: "USDT", name: "Tether", network: "Tron", priceId: "tether" },
-] as { id: string; symbol: string; name: string; network: string; priceId?: string }[];
+] as { id: string; symbol: string; name: string; network: string; priceId?: string; /** Shown and counted, but sending is not supported yet. */ receiveOnly?: boolean }[];
 
 export type Addresses = { evm: string; solana: string; bitcoin: string; ton: string; tron?: string };
 /** Which account address receives each token. */

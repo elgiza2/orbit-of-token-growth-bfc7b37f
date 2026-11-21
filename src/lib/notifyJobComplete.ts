@@ -1,15 +1,33 @@
 import { claimNotification } from "@/lib/notifications/dedupe";
-import { showIsland } from "@/components/notifications/IslandNotice";
+
+/** The user is looking at the app right now: no notification, like WhatsApp. */
+const appInView = () => typeof document !== "undefined" && document.visibilityState === "visible" && document.hasFocus();
 
 /**
- * Fire a completion notification for a background job.
- * - Always shows a sonner toast in-app.
- * - When the tab is hidden AND the user granted Notification permission,
- *   also raises a native browser notification so long-running jobs
- *   (video, slides, deep research) surface even when the user tabbed away.
+ * Show a system notification (outside the app, like WhatsApp) once per event id.
+ * Nothing is drawn inside the app. Shown only while the app is in the background or not focused;
+ * the Android app gets its notifications as server pushes instead.
  */
+export function showSystemNotification(opts: { id: string; title: string; body?: string; onClickUrl?: string; force?: boolean }) {
+  if (typeof window === "undefined" || typeof Notification === "undefined") return;
+  if (!opts.force && appInView()) return;
+  if (Notification.permission !== "granted") return;
+  if (!claimNotification(opts.id)) return;
+  const options: NotificationOptions = { body: opts.body, tag: opts.id, icon: "/app-icon-192.png", badge: "/app-icon-192.png", data: { url: opts.onClickUrl || "/" } };
+  const fallback = () => {
+    try {
+      const n = new Notification(opts.title, options);
+      n.onclick = () => { window.focus(); if (opts.onClickUrl) window.location.href = opts.onClickUrl; n.close(); };
+    } catch { /* this browser only allows notifications through a service worker */ }
+  };
+  // Some mobile browsers only allow notifications through a service worker registration.
+  if ("serviceWorker" in navigator) {
+    void navigator.serviceWorker.getRegistration().then((reg) => reg ? reg.showNotification(opts.title, options) : fallback()).catch(fallback);
+  } else fallback();
+}
+
+/** Completion notification for a background job; same id is shown only once per device. */
 export function notifyJobComplete(opts: {
-  /** Stable event id; the same id is shown only once per device. */
   id: string;
   kind: "video" | "slides" | "research";
   title: string;
@@ -17,36 +35,7 @@ export function notifyJobComplete(opts: {
   onClickUrl?: string;
   failed?: boolean;
 }) {
-  const { id, title, body, onClickUrl } = opts;
-  if (!claimNotification(id)) return;
-
-  try {
-    showIsland({ id, title, body, tone: opts.failed ? "error" : "done", onOpen: onClickUrl ? () => { window.location.href = onClickUrl; } : undefined });
-  } catch {
-    /* ignore */
-  }
-
-  try {
-    if (typeof window === "undefined") return;
-    if (typeof Notification === "undefined") return;
-    const hidden = typeof document !== "undefined" && document.visibilityState === "hidden";
-    if (!hidden) return;
-    if (Notification.permission !== "granted") return;
-    const n = new Notification(title, {
-      body,
-      tag: id,
-      icon: "/icon-192.png",
-      badge: "/icon-192.png",
-    });
-    if (onClickUrl) {
-      n.onclick = () => {
-        window.focus();
-        window.location.href = onClickUrl;
-      };
-    }
-  } catch {
-    /* ignore */
-  }
+  showSystemNotification({ id: opts.id, title: opts.title, body: opts.body, onClickUrl: opts.onClickUrl });
 }
 
 /** Best-effort request for Notification permission (silent when unavailable). */
