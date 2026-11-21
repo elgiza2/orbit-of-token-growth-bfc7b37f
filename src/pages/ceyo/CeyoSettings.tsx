@@ -18,6 +18,7 @@ import {
   DEFAULT_PERMISSIONS, PERMISSIONS_STORAGE_KEY, addPermissionRule, parsePermissionPreferences,
   permissionSummary, removePermissionRule, type PermissionPreferences, type PermissionRuleKind,
 } from "./settingsPreferences";
+import "@/styles/people.css";
 import "@/styles/agent-hub.css";
 import "@/styles/ceyo.css";
 import "@/styles/settings-polish.css";
@@ -857,7 +858,15 @@ function applySurface(mode: SurfaceMode) {
   saveSetting("ceyo_surface", mode);
 }
 
+const ACCENTS: [string, string, string][] = [["mono", "Classic", "#8e8e93"], ["emerald", "Emerald", "#00a884"], ["telegram", "Telegram blue", "#2aabee"], ["violet", "Cyber violet", "#8b5cf6"], ["ember", "Ember sunset", "#f97316"]];
+function applyAccent(value: string) {
+  if (value === "mono") delete document.documentElement.dataset.accent; else document.documentElement.dataset.accent = value;
+  try { localStorage.setItem("megsy_accent", value); } catch { /* storage blocked */ }
+}
+
 function Appearance({ nav }: { nav: Nav }) {
+  const [accent, setAccent] = useState("mono");
+  useEffect(() => { try { setAccent(localStorage.getItem("megsy_accent") || "mono"); } catch { /* storage blocked */ } }, []);
   const [mode, setMode] = useState<ThemeMode>("dark");
   const [surface, setSurface] = useState<SurfaceMode>("black");
   useEffect(() => {
@@ -877,6 +886,8 @@ function Appearance({ nav }: { nav: Nav }) {
         <button type="button" data-active={surface === "black"} onClick={() => chooseSurface("black")}><span><i className="ceyo-black-dot" /></span><strong>Black</strong></button>
         <button type="button" data-active={surface === "bot"} onClick={() => chooseSurface("bot")}><span><i className="ceyo-bot-color-dot" /></span><strong>Bot color</strong></button>
       </div>
+      <h2 className="st-section" style={{ marginTop: 28 }}>Accent color</h2>
+      <div className="ceyo-accent-grid">{ACCENTS.map(([value, label, color]) => <button type="button" key={value} data-active={accent === value} aria-label={label} onClick={() => { setAccent(value); applyAccent(value); }}><i style={{ background: color }} /><strong>{label}</strong></button>)}</div>
     </Shell>
   );
 }

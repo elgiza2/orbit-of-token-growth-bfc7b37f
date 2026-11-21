@@ -34,6 +34,7 @@ const THEME_BOOT_SCRIPT = `
   h.classList.toggle("dark",t==="dark");
   h.classList.toggle("light",t==="light");
   h.style.colorScheme=t;
+  var a=localStorage.getItem("megsy_accent");if(a&&a!=="mono")h.setAttribute("data-accent",a);
 }catch(e){}})();
 `;
 

@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "members see co-members read state" ON public.people_thread_members;

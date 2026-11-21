@@ -92,3 +92,18 @@
 .pp-action-time { padding: 9px 16px; border-top: 1px solid rgba(127,127,127,.18); color: var(--cx-mute, #9a9a9a); font-size: 12px; }
 .pp-scroll .cx-bubble { -webkit-touch-callout: none; }
 .pp-scroll + .cx-composer-wrap .cx-composer { backdrop-filter: blur(20px) saturate(140%); }
+/* Accent palettes (Settings → Appearance) and frosted glass for chat bars */
+html[data-accent="emerald"] { --ceyo-accent: #00a884; --ceyo-accent-ink: #fff; }
+html[data-accent="telegram"] { --ceyo-accent: #2aabee; --ceyo-accent-ink: #fff; }
+html[data-accent="violet"] { --ceyo-accent: #8b5cf6; --ceyo-accent-ink: #fff; }
+html[data-accent="ember"] { --ceyo-accent: #f97316; --ceyo-accent-ink: #fff; }
+html[data-accent] .cx-chat .cx-bubble-user { background: var(--ceyo-accent) !important; color: var(--ceyo-accent-ink) !important; }
+html[data-accent] .cx-chat .cx-composer .cx-send:not(:disabled) { background: var(--ceyo-accent) !important; color: var(--ceyo-accent-ink) !important; }
+html[data-accent] .cx-reply-preview, html[data-accent] .cx-reply-quote { border-inline-start: 3px solid var(--ceyo-accent); }
+html[data-accent] .pp-draft { color: var(--ceyo-accent); }
+.cx-chat .cx-composer { background: color-mix(in oklab, var(--cx-card, #232325) 72%, transparent); backdrop-filter: blur(20px) saturate(140%); }
+.cx-chat .cx-title-pill, .cx-chat .cx-head .cx-glass { backdrop-filter: blur(20px) saturate(140%); }
+.ceyo-accent-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.ceyo-accent-grid button { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 4px; border: 1px solid transparent; border-radius: 16px; background: rgba(127,127,127,.1); color: inherit; font-size: 11.5px; cursor: pointer; }
+.ceyo-accent-grid button[data-active="true"] { border-color: currentColor; }
+.ceyo-accent-grid i { width: 28px; height: 28px; border-radius: 50%; }
