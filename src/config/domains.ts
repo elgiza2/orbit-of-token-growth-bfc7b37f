@@ -53,3 +53,32 @@ export function webAppUrl(host: string, currentOrigin: string, path: string): st
 export function webAppOrigin(host: string, currentOrigin: string): string {
   return isProductionHost(host) ? `https://${DOMAINS.web}` : currentOrigin;
 }
+
+/** The one address search engines should index. Every production host points its canonical links here,
+ *  so ceyo.si, ceyo.app, marketer subdomains and web.ceyo.si never compete as duplicate copies. */
+export const SEO_HOST = "ceyo.app";
+
+/** Origin for canonical/hreflang/sitemap links: the SEO host on production, the current origin on previews. */
+export function canonicalOrigin(host: string, requestOrigin: string): string {
+  return isProductionHost(host) ? `https://${SEO_HOST}` : requestOrigin;
+}
+
+/** True for paths that belong to the public website (crawlable on every host). */
+export function isPublicPath(path: string): boolean {
+  return path === "/" || PUBLIC_PATHS.test(path);
+}
+
+/** X-Robots-Tag for a page: the Android app shell is never indexed, and private app screens on the web host stay out of search. */
+export function robotsTagFor(host: string, path: string): string | null {
+  const surface = surfaceFor(host);
+  if (surface === "android") return "noindex, nofollow";
+  if (surface === "web" && isProductionHost(host) && (path === "/" || !PUBLIC_PATHS.test(path))) return "noindex";
+  return null;
+}
+
+/** Host and origin of a request, trusting x-forwarded-host only behind the local dev proxy. */
+export function requestHostOrigin(request: Request): { url: URL; host: string; origin: string } {
+  const url = new URL(request.url);
+  const fwd = url.hostname === "localhost" ? request.headers.get("x-forwarded-host") : null;
+  return { url, host: fwd || url.host, origin: fwd ? `https://${fwd}` : url.origin };
+}

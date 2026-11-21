@@ -59,6 +59,8 @@ public class MegsyBridge {
             com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken().addOnSuccessListener(MegsyBridge::dispatchPushToken);
         } catch (Throwable ignored) { /* push not configured in this build */ } }
 
+    /** The web app painted its first screen: let the native ghost splash go. */
+    @JavascriptInterface public void appReady() { if (trusted()) si.ceyo.app.MainActivity.markWebReady(); }
     @JavascriptInterface public boolean hasVoiceKey() { return trusted() && !CeyoLiveCall.key(ctx()).isEmpty(); }
     @JavascriptInterface public void setVoiceKey(String key) { if (trusted()) CeyoLiveCall.saveKey(ctx(), key); }
 

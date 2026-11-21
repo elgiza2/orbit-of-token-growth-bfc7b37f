@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState, type ReactNode } from "react";
 import { BootFailed } from "@/components/common/BootFailed";
 import { landingRedirect } from "@/config/domains";
 
@@ -42,7 +42,8 @@ const SpaAppLazy = lazy(async () => {
   }>;
 });
 
-export function SpaMount() {
+/** `fallback` stays on screen (e.g. a server-rendered page) until the app has loaded. */
+export function SpaMount({ fallback = null }: { fallback?: ReactNode } = {}) {
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     let cancelled = false;
@@ -58,7 +59,7 @@ export function SpaMount() {
   if (landingTo) return null;
   if (failed) return <BootFailed />;
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={fallback}>
       <SpaAppLazy />
     </Suspense>
   );

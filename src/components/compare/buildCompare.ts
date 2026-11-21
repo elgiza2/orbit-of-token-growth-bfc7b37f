@@ -1,3 +1,4 @@
+import { canonicalOrigin } from "@/config/domains";
 /** Full server-rendered HTML for /compare and /compare/<tool>, in the main landing page's look. */
 import { TOOLS, FEATURE_LABELS, CEYO_FEATURES, type Tool } from "./tools";
 import { PLAN_PRICES } from "@/lib/payments/plans";
@@ -44,7 +45,7 @@ export function compareIndex(origin: string): string {
 export function compareResponse(request: Request, slug?: string): Response {
   const url = new URL(request.url);
   const fwd = url.hostname === "localhost" ? request.headers.get("x-forwarded-host") : null;
-  const origin = fwd ? `https://${fwd}` : url.origin;
+  const origin = canonicalOrigin(fwd || url.host, fwd ? `https://${fwd}` : url.origin);
   let html: string;
   if (slug) { const t = TOOLS.find((x) => x.slug === slug); if (!t) return new Response("Not found", { status: 404 }); html = comparePage(t, origin); }
   else html = compareIndex(origin);

@@ -1,3 +1,11 @@
+## Group speakers, Android splash, SEO — 2026-11-21
+- [x] Bots tell group members apart (bot teams, people chats, Telegram groups).
+- [x] Android ghost splash that stays until the app is ready (web part live after publish).
+- [ ] Build and upload a new APK so the native ghost launch screen reaches phones (owner).
+- [x] SEO: server-rendered home on landing hosts, one canonical host, sitemap, noindex for app screens, crawlable legal pages.
+- [ ] Owner to confirm main search domain (ceyo.app used for now).
+- [ ] Deferred by owner: full app UX, page transitions and button animations.
+
 ## Provider switch — 2026-11-20
 - [x] Kashier reads the signing pair from external Supabase Vault before opening or claiming payments.
 - [ ] Kashier live verification: owner must rotate and enter the new pair in Supabase Vault; do not use a live charge for testing without approval.

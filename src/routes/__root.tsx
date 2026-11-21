@@ -241,7 +241,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Ceyo gives you a main bot that creates new bots and group chats for you. Super intelligence, made personal.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "/" },
       { property: "og:site_name", content: "Ceyo" },
       { property: "og:locale", content: "en_US" },
       { property: "og:locale:alternate", content: "ar_EG" },

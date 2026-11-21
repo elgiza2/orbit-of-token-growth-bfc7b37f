@@ -1,5 +1,5 @@
 /** Serves /countries/<slug>: loads that country's copy and renders it with one of seven designs (neighbours in the list never share one). */
-import { webAppUrl } from "@/config/domains";
+import { canonicalOrigin, webAppUrl } from "@/config/domains";
 import { footerPanels } from "./footerPanels";
 import { LANG_NAMES, PAGE_LANGS } from "@/components/landing/localePages";
 import { COUNTRY_PAGES } from "./list";
@@ -21,7 +21,8 @@ export const designIndex = (code: string) => Math.max(0, COUNTRY_PAGES.findIndex
 function originOf(request: Request) {
   const url = new URL(request.url);
   const fwd = url.hostname === "localhost" ? request.headers.get("x-forwarded-host") : null;
-  return { url, host: fwd || url.host, origin: fwd ? `https://${fwd}` : url.origin };
+  const host = fwd || url.host, origin = fwd ? `https://${fwd}` : url.origin;
+  return { url, host, origin, seo: canonicalOrigin(host, origin) };
 }
 
 function footerLinks(current: string, label: (k: string, f: string) => string) {
@@ -31,13 +32,13 @@ function footerLinks(current: string, label: (k: string, f: string) => string) {
 export async function countryPageResponse(request: Request, slug: string): Promise<Response> {
   const page = COUNTRY_PAGES.find((c) => c.slug === slug.toLowerCase() || c.code === slug.toLowerCase());
   if (!page) return new Response("Not found", { status: 404 });
-  const { url, host, origin } = originOf(request);
+  const { url, host, origin, seo } = originOf(request);
   if (page.slug !== slug) return Response.redirect(`${origin}/countries/${page.slug}${url.search}`, 301);
   const load = DATA[`./data/${page.code}.json`];
   if (!load) return new Response("Not found", { status: 404 });
   const d = (await load()).default;
   const path = `/countries/${page.slug}`;
-  const abs = (s: string) => (s.startsWith("/") ? origin + s : s);
+  const abs = (s: string) => (s.startsWith("/") ? seo + s : s);
   const data: CountryData = { ...d, images: d.images.map((i) => ({ ...i, src: abs(i.src) })) };
   const ref = url.searchParams.get("ref");
   const font = scriptFont(d.lang, d.code);
@@ -47,7 +48,7 @@ export async function countryPageResponse(request: Request, slug: string): Promi
       const p = `/auth?mode=signup${plan ? `&plan=${plan}` : ""}${ref && /^[a-z0-9_-]{1,32}$/i.test(ref) ? `&ref=${ref}` : ""}`;
       return webAppUrl(host, origin, p);
     },
-    head: pageHead(data, origin, path, font.family),
+    head: pageHead(data, seo, path, font.family),
     script: font.stack,
     links: footerLinks(d.code, (k, f) => d.ui?.[k] || f),
   };
@@ -57,7 +58,7 @@ export async function countryPageResponse(request: Request, slug: string): Promi
 
 /** /countries: index of every country page, each in its own language. */
 export function countriesIndexResponse(request: Request): Response {
-  const { origin } = originOf(request);
+  const { seo: origin } = originOf(request);
   const items = COUNTRY_PAGES.map((c) => `<li><a href="/countries/${c.slug}" hreflang="${esc(c.lang)}"><b lang="${esc(c.lang)}">${esc(c.name)}</b><span>${esc(c.nameEn)}</span></a></li>`).join("");
   const t = "Ceyo around the world — personal AI agents in every country";
   const desc = `Ceyo pages for ${COUNTRY_PAGES.length} countries, each written in the local language: personal AI agents with their own cloud computer, browser and Telegram bot.`;

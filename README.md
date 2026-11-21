@@ -430,6 +430,12 @@ bunx vitest run
 
 ## Current work
 
+### Group speakers, Android ghost splash and SEO — 2026-11-21
+- Group chats: earlier bot-team replies reach each bot labelled "Name: …" (own parts vs teammates'); people chats and Telegram groups label every line with the sender (display name + @username) and say who wrote the latest message.
+- Android: launch screen is the ghost on black (drawable ceyo_splash_ghost) held by SplashScreen until the web calls MegsyAndroid.appReady() (max 12 s); the web overlay shows the same ghost floating until the first real screen paints. Needs a new APK build to reach phones.
+- SEO: landing hosts serve "/" as server-rendered HTML; app screens on landing hosts 302 to web.ceyo.si; canonical/sitemap links use one SEO host (ceyo.app); Android host and private web-app screens send X-Robots-Tag noindex; company/legal pages are server-rendered; removed the global og:url "/".
+- Verification: unit tests for speaker labels, person labels, splash wait, canonical host and landing routing pass; curl confirmed server HTML for "/" (landing host), /privacy text, sitemap and noindex header; /privacy opens in a browser. Not checked: a real group chat reply, the Android splash on a phone (needs APK build), published hosts.
+
 ### Light theme and translation — 2026-11-18
 - Color sweep: light tokens for info pages, Vault, chat previews and widgets; readable home avatar, + and apps menus, search screen, bottom search bars, app count, own chat bubbles (dark bubble, white text), code blocks/tables. Automated contrast scan of home, settings, info pages, search, menus, bot and group chat: no unreadable text left in light; dark unchanged.
 - Light theme now covers home, settings, Vault and chat with a pure white page background (src/styles/ceyo-light.css, loaded last). White bots keep a soft outline on white.

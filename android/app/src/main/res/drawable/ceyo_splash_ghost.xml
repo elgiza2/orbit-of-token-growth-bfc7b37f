@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launch screen mark: the Ceyo ghost on black. The 288dp transparent canvas is
+     the size Android's splash expects for an icon without a background; the
+     ghost stays inside its 192dp safe circle so nothing gets clipped. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="288dp" android:height="288dp">
+        <shape android:shape="rectangle"><solid android:color="@android:color/transparent" /></shape>
+    </item>
+    <item android:width="150dp" android:height="150dp" android:gravity="center" android:drawable="@drawable/ceyo_splash_ghost_art" />
+</layer-list>

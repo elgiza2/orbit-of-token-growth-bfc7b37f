@@ -1,4 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SpaMount } from "@/lib/spaMount";
+import { legalRouteComponent } from "@/pages/legal/LegalRoute";
 import { documentHead } from "@/pages/legal/documents";
-export const Route = createFileRoute("/about")({ ssr: false, component: SpaMount, head: () => documentHead("about") });
+export const Route = createFileRoute("/about")({ component: legalRouteComponent("about"), head: () => documentHead("about") });

@@ -11,7 +11,23 @@ import si.ceyo.app.assistant.CeyoIntents;
 import si.ceyo.app.assistant.MegsyBridge;
 
 public class MainActivity extends BridgeActivity {
+    /** Longest the ghost splash waits for the web app before showing whatever has loaded. */
+    private static final long SPLASH_MAX_MS = 12000;
+    private static volatile boolean webReady = false;
+    private long splashDeadline;
+
+    /** Called by MegsyBridge.appReady() once the web app has painted its first real screen. */
+    public static void markWebReady() { webReady = true; }
+
     @Override public void onCreate(Bundle savedInstanceState) {
+        // The ghost launch screen stays up until the web app says it is ready, so the
+        // icon → second loader → app jump no longer happens.
+        androidx.core.splashscreen.SplashScreen splash = androidx.core.splashscreen.SplashScreen.installSplashScreen(this);
+        webReady = false;
+        splashDeadline = android.os.SystemClock.uptimeMillis() + SPLASH_MAX_MS;
+        splash.setKeepOnScreenCondition(() -> !webReady && android.os.SystemClock.uptimeMillis() < splashDeadline);
+        splash.setOnExitAnimationListener(view -> view.getView().animate().alpha(0f).setDuration(220)
+            .withEndAction(view::remove).start());
         registerPlugin(CeyoPlayBillingPlugin.class);
         super.onCreate(savedInstanceState);
         CeyoChannels.ensure(this);

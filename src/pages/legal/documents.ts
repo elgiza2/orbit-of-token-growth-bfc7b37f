@@ -1,3 +1,4 @@
+import { SEO_HOST } from "@/config/domains";
 import terms from "@/content/bot-terms.md?raw";
 import privacy from "@/content/privacy.md?raw";
 import subscriptions from "@/content/subscription-terms.md?raw";
@@ -23,5 +24,6 @@ export const documentHead = (slug: LegalSlug) => {
     { title }, { name: "description", content: doc.description },
     { property: "og:title", content: title }, { property: "og:description", content: doc.description },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
-  ] };
+    { property: "og:url", content: `https://${SEO_HOST}/${slug}` },
+  ], links: [{ rel: "canonical", href: `https://${SEO_HOST}/${slug}` }] };
 };

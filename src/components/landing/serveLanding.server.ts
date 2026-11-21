@@ -1,11 +1,16 @@
 import { buildLandingHtml, type LandingOptions } from "./buildLanding";
-import { webAppUrl } from "@/config/domains";
+import { canonicalOrigin, webAppUrl } from "@/config/domains";
+import { cleanRefCode, marketerCodeForHost } from "@/lib/referrals/rules";
 import { COUNTRIES, PAGE_LANGS } from "./localePages";
 import type { PageLang as LandingLang } from "./localePages";
 import { COUNTRY_PAGES } from "@/components/countries/list";
 
-/** Full HTML response for a public marketing page, rendered on the server so search engines read it. */
-export function landingResponse(request: Request, opts: { lang: LandingLang; mode?: "home" | "pricing"; countryCode?: string }): Response {
+/** Counts one marketer-page visit per browser session (same rule the in-app landing used). */
+const refVisitScript = (code: string) => `<script>(function(){try{if(sessionStorage.getItem("ceyo_ref_visit"))return;sessionStorage.setItem("ceyo_ref_visit","1");fetch("/api/public/ref-visit",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:${JSON.stringify(code).replace(/</g, "\\u003c")}}),keepalive:true}).catch(function(){})}catch(e){}})()</script>`;
+
+/** Full HTML response for a public marketing page, rendered on the server so search engines read it.
+ *  `root` serves the site's home "/" itself (canonical "/"), not a /<lang> copy. */
+export function landingResponse(request: Request, opts: { lang: LandingLang; mode?: "home" | "pricing"; countryCode?: string; root?: boolean }): Response {
   const url = new URL(request.url);
   const fwd = url.hostname === "localhost" ? request.headers.get("x-forwarded-host") : null;
   const host = fwd || url.host;
@@ -13,18 +18,21 @@ export function landingResponse(request: Request, opts: { lang: LandingLang; mod
   const ref = url.searchParams.get("ref");
   const country = opts.countryCode ? COUNTRIES.find((c) => c.code === opts.countryCode) : undefined;
   const suffix = country ? `/${country.code}` : opts.mode === "pricing" ? "/pricing" : "";
-  const path = `/${opts.lang}${suffix}`;
+  const path = opts.root ? "/" : `/${opts.lang}${suffix}`;
   const alternates = PAGE_LANGS.map((l) => ({ hreflang: country ? `${l}-${country.code.toUpperCase()}` : l, path: `/${l}${suffix}` }));
-  alternates.push({ hreflang: "x-default", path: `/en${suffix}` });
+  alternates.push({ hreflang: "x-default", path: opts.root || !suffix ? "/" : `/en${suffix}` });
   const o: LandingOptions = {
     lang: opts.lang, mode: opts.mode, country,
     appLink: (p) => {
       const withRef = ref && /^[a-z0-9_-]{1,32}$/i.test(ref) ? `${p}${p.includes("?") ? "&" : "?"}ref=${ref}` : p;
       return webAppUrl(host, origin, withRef);
     },
-    seo: { origin, path, alternates },
+    seo: { origin: canonicalOrigin(host, origin), path, alternates },
   };
-  return new Response(buildLandingHtml(o), { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300" } });
+  const visitCode = marketerCodeForHost(host) ?? cleanRefCode(ref);
+  let html = buildLandingHtml(o);
+  if (visitCode) html = html.replace("</body>", `${refVisitScript(visitCode)}</body>`);
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": visitCode ? "private, max-age=300" : "public, max-age=300", Vary: "Accept-Language" } });
 }
 
 /** /<lang>/pricing, or an old /<lang>/<country> link (permanent redirect to the country page); unknown countries get a 404. */

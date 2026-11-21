@@ -61,3 +61,6 @@
 - Vault card/login/contact metadata syncs to owner-scoped vault_items so bots read it via read_vault; passwords stay device-only and cards keep only last four, holder, expiry and an AI-usage note (never full number or CVC). Why: bots can use the Vault without storing payment secrets.
 - Bot libraries filter agent_documents/agent_artifacts by bot_id (primary bot also shows legacy rows without one); tools that save files must pass the bot id. Why: each bot's profile shows only its own files.
 - Completion notifications go through notifyJobComplete with a stable event id deduped by src/lib/notifications/dedupe.ts and render as the island notice. Why: no repeated alerts across remounts, tabs or reloads.
+- Group chat history reaches models with speaker labels (stored [[speaker:]] markers become "Name: "; people/Telegram lines carry sender labels). Why: bots must not confuse teammates' or members' messages with their own.
+- Android launch: native SplashScreen holds the ghost until MegsyAndroid.appReady() (12 s cap); AndroidSplash mirrors it until firstScreen detects content. Why: one continuous loader instead of icon → second loader.
+- Host-level SEO runs in src/lib/seo/hostRouting.server.ts from src/server.ts; canonical links come from canonicalOrigin/SEO_HOST in src/config/domains.ts. Why: one indexed host, crawlable landing "/" and no indexed app shells.

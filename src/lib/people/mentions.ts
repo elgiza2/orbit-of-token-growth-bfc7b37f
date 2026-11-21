@@ -15,3 +15,13 @@ export function botsToAnswer<T extends { name: string }>(text: string, bots: T[]
   const named = mentionedBots(text, bots);
   return (named.length ? named : bots).slice(0, MAX_GROUP_REPLIES);
 }
+
+export type Person = { id: string; username: string | null; displayName: string | null };
+/** A name that tells members apart even when two people share a display name. */
+export function personLabel(members: Person[], id: string | null) {
+  const p = members.find((x) => x.id === id);
+  if (!p) return "Member";
+  const handle = p.username ? `@${p.username}` : "";
+  return p.displayName ? (handle ? `${p.displayName} (${handle})` : p.displayName) : handle || "Member";
+}
+

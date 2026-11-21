@@ -11,6 +11,7 @@ When it exists, Megsy schedules real alarms/reminders on the phone and registers
 | `scheduleReminder(json)` | same | `setExactAndAllowWhileIdle` → normal notification |
 | `cancel(id)` | task id | cancel the PendingIntent for that id |
 | `requestPushToken()` | – | get FCM token, then call back JS (below) |
+| `appReady()` | – | web app painted its first screen; releases the native ghost launch screen (held up to 12 s otherwise) |
 
 Use `id.hashCode()` as the PendingIntent request code so re-scheduling replaces the old one.
 Re-schedule everything on `BOOT_COMPLETED` (the site also re-sends all upcoming tasks on every open).

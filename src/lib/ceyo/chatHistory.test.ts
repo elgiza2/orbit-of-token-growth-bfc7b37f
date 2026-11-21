@@ -21,3 +21,11 @@ it2("sends photos of the newest user message as image parts", async () => {
   expect2(Array.isArray(out[0].content)).toBe(true);
   expect2((out[0].content as unknown as { type: string }[])[1].type).toBe("image_url");
 });
+
+describe("group chat speakers", () => {
+  it("labels each teammate's part of an earlier group reply with their name", async () => {
+    const { normalizeChatHistory: n } = await import("./chatHistory");
+    expect(n([{ role: "assistant", content: "[[speaker: Writer]]\nDraft ready\n\n[[speaker: Researcher]]\nSources found" }], { speakerLabels: true }))
+      .toEqual([{ role: "assistant", content: "Writer: Draft ready\n\nResearcher: Sources found" }]);
+  });
+});

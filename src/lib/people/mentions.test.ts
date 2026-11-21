@@ -15,3 +15,9 @@ describe("botsToAnswer", () => {
     expect(botsToAnswer("hi", many)).toHaveLength(MAX_GROUP_REPLIES);
   });
 });
+
+import { personLabel } from "./mentions";
+describe("personLabel", () => {
+  const people = [{ id: "a", username: "ali1", displayName: "Ali" }, { id: "b", username: "ali2", displayName: "Ali" }];
+  it("tells apart two people with the same name", () => expect([personLabel(people, "a"), personLabel(people, "b")]).toEqual(["Ali (@ali1)", "Ali (@ali2)"]));
+});

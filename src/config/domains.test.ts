@@ -17,3 +17,15 @@ describe("domain split", () => {
   it("the web app never redirects", () => expect(landingRedirect("web.ceyo.si", "/settings")).toBeNull());
   it("landing buttons open web.ceyo.si", () => expect(webAppOrigin("ceyo.app", "https://ceyo.app")).toBe("https://web.ceyo.si"));
 });
+
+import { canonicalOrigin, robotsTagFor } from "./domains";
+describe("search engine addresses", () => {
+  it("every production host points search engines at ceyo.app", () => {
+    expect(["ceyo.si", "matra.ceyo.app", "web.ceyo.si"].map((h) => canonicalOrigin(h, `https://${h}`))).toEqual(["https://ceyo.app", "https://ceyo.app", "https://ceyo.app"]);
+  });
+  it("previews keep their own address", () => expect(canonicalOrigin("localhost:8080", "http://localhost:8080")).toBe("http://localhost:8080"));
+  it("the Android app is never indexed", () => expect(robotsTagFor("app.ceyo.si", "/pricing")).toBe("noindex, nofollow"));
+  it("private web-app screens are not indexed", () => expect(robotsTagFor("web.ceyo.si", "/settings")).toBe("noindex"));
+  it("public pages on the web app stay indexable", () => expect(robotsTagFor("web.ceyo.si", "/privacy")).toBeNull());
+  it("the landing is indexable", () => expect(robotsTagFor("ceyo.app", "/")).toBeNull());
+});

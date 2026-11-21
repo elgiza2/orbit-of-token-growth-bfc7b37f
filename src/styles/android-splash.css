@@ -1,9 +1,22 @@
-.android-splash { position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center; background: #000; transition: opacity .4s ease; }
-.android-splash.is-leaving { opacity: 0; pointer-events: none; }
-.android-splash-loader { display: block; width: 84px; height: 84px; position: relative; }
-.android-splash-loader::before, .android-splash-loader::after {
-  content: ""; position: absolute; left: 50%; bottom: 0; width: 64px; height: 64px; border-radius: 50%;
-  background: #fff; transform: translate(-50%, -100%) scale(0); animation: push_401 2s infinite linear;
+/* Android app boot splash — mirrors the native launch screen (pure black, ghost
+   150dp centred) so the native → web hand-off shows no jump. Black is fixed on
+   purpose: it must match the native window colour, not the app theme. */
+.android-splash {
+  position: fixed; inset: 0; z-index: 2147483000; display: grid; place-items: center;
+  background: #000; opacity: 1; transition: opacity .3s cubic-bezier(.2, .8, .2, 1);
+  contain: strict;
 }
-.android-splash-loader::after { animation-delay: 1s; }
-@keyframes push_401 { 0%, 50% { transform: translate(-50%, 0%) scale(1); } 100% { transform: translate(-50%, -100%) scale(0); } }
+.android-splash.is-leaving { opacity: 0; pointer-events: none; }
+.android-splash-ghost { position: relative; width: 150px; height: 150px; will-change: transform; animation: ceyo-ghost-float 2.6s ease-in-out infinite; }
+.android-splash-ghost img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+.android-splash-ghost::after {
+  content: ""; position: absolute; inset: 18% 10% -6%; border-radius: 50%; z-index: -1;
+  background: radial-gradient(closest-side, rgba(170, 200, 255, .22), transparent);
+  filter: blur(14px); animation: ceyo-ghost-glow 2.6s ease-in-out infinite;
+}
+.android-splash.is-leaving .android-splash-ghost { transform: scale(1.06); transition: transform .3s cubic-bezier(.2, .8, .2, 1); animation: none; }
+@keyframes ceyo-ghost-float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-7px) scale(1.025); } }
+@keyframes ceyo-ghost-glow { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .android-splash-ghost, .android-splash-ghost::after { animation: none; }
+}
