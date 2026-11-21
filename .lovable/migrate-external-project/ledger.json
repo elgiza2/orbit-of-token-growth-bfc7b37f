@@ -1,0 +1,8 @@
+[
+ {"capability":"code","source":"github elgiza2/token-growth-orbit","outcome":"copied as-is (same Lovable TanStack template and versions)","status":"migrated","next_action":"none"},
+ {"capability":"database schema and records","source":"user's Supabase project kcrssdgsefhpzoidlhhm","outcome":"kept: this project is already connected to the same Supabase project","status":"verified","next_action":"none"},
+ {"capability":"auth identities","source":"same Supabase project","outcome":"kept; users and sessions unchanged","status":"migrated","next_action":"user sign-in check"},
+ {"capability":"edge functions","source":"supabase/functions","outcome":"code copied; already deployed on the user's Supabase","status":"migrated","next_action":"redeploy only if changed"},
+ {"capability":"server secrets","source":"project secrets","outcome":"secrets stored only in the old project are not copied","status":"pending","next_action":"add missing provider keys when a feature needs them"},
+ {"capability":"verification","source":"preview","outcome":"build OK; home and pricing pages load","status":"verified","next_action":"none"}
+]

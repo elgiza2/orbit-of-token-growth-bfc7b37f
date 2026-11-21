@@ -1,0 +1,1 @@
+- AgentPhone handles new agent-requested outbound calls; Telnyx still handles inbound and old call results. Reserve once, never redial unknown outcomes, and trust only authenticated provider reads for reports. Why: avoid duplicate charges and invented outcomes without changing the in-app call button.

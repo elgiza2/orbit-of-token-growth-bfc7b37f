@@ -1,0 +1,12 @@
+/* Dynamic-island notice (always black, like the hardware island). */
+.island-notice { display: flex; align-items: center; gap: 12px; width: min(92vw, 380px); margin: 0 auto; padding: 10px 14px 10px 10px; border: 0; border-radius: 28px; background: #000; color: #fff; text-align: start; box-shadow: 0 12px 40px rgba(0,0,0,.45); cursor: pointer; transform-origin: top center; animation: island-open .55s cubic-bezier(.2,1.25,.35,1) both; }
+.island-notice-icon { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 50%; background: #1f1f22; color: #6ee7a1; }
+.island-notice[data-tone="error"] .island-notice-icon { color: #ff8a7a; }
+.island-notice-copy { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
+.island-notice-copy strong { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.island-notice-copy small { color: rgba(255,255,255,.62); font-size: 12.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.island-notice-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #6ee7a1; box-shadow: 0 0 10px #6ee7a1; animation: island-pulse 1.6s ease-in-out infinite; }
+.island-notice[data-tone="error"] .island-notice-dot { background: #ff8a7a; box-shadow: 0 0 10px #ff8a7a; }
+@keyframes island-open { 0% { opacity: 0; transform: scaleX(.32) scaleY(.6); border-radius: 999px; } 60% { opacity: 1; } 100% { transform: none; } }
+@keyframes island-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .island-notice, .island-notice-dot { animation: none; } }

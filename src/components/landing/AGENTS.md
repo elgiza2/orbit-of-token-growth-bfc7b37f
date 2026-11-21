@@ -1,0 +1,3 @@
+- /pricing and /<lang> are server-rendered full HTML from buildLanding.ts (same template as the main landing); languages live in localePages.ts, extra translations in landingI18n.ts, all listed in /sitemap.xml. Why: one design, crawlable pages.
+- Country pages live once each at /countries/<slug> in the country's own language, rendered by src/components/countries (copy + photos in data/<code>.json, index in list.ts, seven designs in designs/, assigned by list position so neighbours differ). Old /<lang>/<country> links 301-redirect there. Why: one canonical, distinct, native-language page per country.
+- /compare and /compare/<tool> are server-rendered HTML from src/components/compare (tool data in tools.ts), listed in /sitemap.xml. Why: crawlable full comparison pages.

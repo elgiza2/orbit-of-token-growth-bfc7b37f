@@ -10,33 +10,1187 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SplatRouteImport } from './routes/$'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as ConnectedRouteImport } from './routes/connected'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as SecurityRouteImport } from './routes/security'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SubscriptionTermsRouteImport } from './routes/subscription-terms'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ApiAnythingRouteImport } from './routes/api/anything'
+import { Route as ApiBillingRouteImport } from './routes/api/billing'
+import { Route as ApiCallFollowupRouteImport } from './routes/api/call-followup'
+import { Route as ApiCallVisionRouteImport } from './routes/api/call-vision'
+import { Route as ApiCeyoChatRouteImport } from './routes/api/ceyo-chat'
+import { Route as ApiCeyoTaskRouteImport } from './routes/api/ceyo-task'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiClerkRouteImport } from './routes/api/clerk'
+import { Route as ApiComputerAgentRouteImport } from './routes/api/computer-agent'
+import { Route as ApiDeepResearchRouteImport } from './routes/api/deep-research'
+import { Route as ApiDevAdminRouteImport } from './routes/api/dev-admin'
+import { Route as ApiDevAgentRouteImport } from './routes/api/dev-agent'
+import { Route as ApiLongRunRouteImport } from './routes/api/long-run'
+import { Route as ApiManusAdminRouteImport } from './routes/api/manus-admin'
+import { Route as ApiMarketNewsRouteImport } from './routes/api/market-news'
+import { Route as ApiMcpRouteImport } from './routes/api/mcp'
+import { Route as ApiPeopleBotRouteImport } from './routes/api/people-bot'
+import { Route as ApiPhoneRouteImport } from './routes/api/phone'
+import { Route as ApiReadUrlRouteImport } from './routes/api/read-url'
+import { Route as ApiRenderPdfRouteImport } from './routes/api/render-pdf'
+import { Route as ApiTradeableAssetsRouteImport } from './routes/api/tradeable-assets'
+import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
+import { Route as ApiVideoCallRouteImport } from './routes/api/video-call'
+import { Route as ApiVoiceRouteImport } from './routes/api/voice'
+import { Route as ApiVoiceCallRouteImport } from './routes/api/voice-call'
+import { Route as ApiVoiceTranscribeRouteImport } from './routes/api/voice-transcribe'
+import { Route as ApiWalletRouteImport } from './routes/api/wallet'
+import { Route as ApiWalletActionRouteImport } from './routes/api/wallet-action'
+import { Route as ApiWebSearchRouteImport } from './routes/api/web-search'
+import { Route as ArIndexRouteImport } from './routes/ar.index'
+import { Route as ArCountryRouteImport } from './routes/ar.$country'
+import { Route as AuthNativeReturnRouteImport } from './routes/auth.native-return'
+import { Route as CompareIndexRouteImport } from './routes/compare.index'
+import { Route as CompareToolRouteImport } from './routes/compare.$tool'
+import { Route as CountriesIndexRouteImport } from './routes/countries.index'
+import { Route as CountriesSlugRouteImport } from './routes/countries.$slug'
+import { Route as DeIndexRouteImport } from './routes/de.index'
+import { Route as DeCountryRouteImport } from './routes/de.$country'
+import { Route as EnIndexRouteImport } from './routes/en.index'
+import { Route as EnCountryRouteImport } from './routes/en.$country'
+import { Route as EsIndexRouteImport } from './routes/es.index'
+import { Route as EsCountryRouteImport } from './routes/es.$country'
+import { Route as FrIndexRouteImport } from './routes/fr.index'
+import { Route as FrCountryRouteImport } from './routes/fr.$country'
+import { Route as HiIndexRouteImport } from './routes/hi.index'
+import { Route as HiCountryRouteImport } from './routes/hi.$country'
+import { Route as PtIndexRouteImport } from './routes/pt.index'
+import { Route as PtCountryRouteImport } from './routes/pt.$country'
+import { Route as RuIndexRouteImport } from './routes/ru.index'
+import { Route as RuCountryRouteImport } from './routes/ru.$country'
+import { Route as TrIndexRouteImport } from './routes/tr.index'
+import { Route as TrCountryRouteImport } from './routes/tr.$country'
+import { Route as ZhIndexRouteImport } from './routes/zh.index'
+import { Route as ZhCountryRouteImport } from './routes/zh.$country'
+import { Route as ApiAgentSplatRouteImport } from './routes/api/agent.$'
+import { Route as ApiPublicCeyoJobsRouteImport } from './routes/api/public/ceyo-jobs'
+import { Route as ApiPublicCeyoRoutinesRouteImport } from './routes/api/public/ceyo-routines'
+import { Route as ApiPublicConfigStatusRouteImport } from './routes/api/public/config-status'
+import { Route as ApiPublicFxRouteImport } from './routes/api/public/fx'
+import { Route as ApiPublicGeoRouteImport } from './routes/api/public/geo'
+import { Route as ApiPublicKashierWebhookRouteImport } from './routes/api/public/kashier-webhook'
+import { Route as ApiPublicRefVisitRouteImport } from './routes/api/public/ref-visit'
+import { Route as ApiPublicRemindersTickRouteImport } from './routes/api/public/reminders-tick'
+import { Route as ApiPublicTelegramKeysRouteImport } from './routes/api/public/telegram-keys'
+import { Route as ApiPublicTelnyxVoiceRouteImport } from './routes/api/public/telnyx-voice'
+import { Route as ApiPublicAgentToolsTokenRouteImport } from './routes/api/public/agent-tools.$token'
+import { Route as ApiPublicChannelsTelegramRouteImport } from './routes/api/public/channels/telegram'
+import { Route as ApiPublicChannelsXPollRouteImport } from './routes/api/public/channels/x-poll'
+import { Route as ApiPublicChannelsXchatRouteImport } from './routes/api/public/channels/xchat'
+import { Route as ApiPublicMediaStatusRunIdRouteImport } from './routes/api/public/media-status.$runId'
+import { Route as ApiPublicSiteSiteIdRouteImport } from './routes/api/public/site.$siteId'
+import { Route as ApiPublicTgBotDocIdRouteImport } from './routes/api/public/tg-bot.$docId'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
+import { Route as ApiPublicCeyoHookRoutineIdSigRouteImport } from './routes/api/public/ceyo-hook.$routineId.$sig'
+import { Route as ApiPublicMediaRunIdIndexRouteImport } from './routes/api/public/media.$runId.$index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectedRoute = ConnectedRouteImport.update({
+  id: '/connected',
+  path: '/connected',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecurityRoute = SecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubscriptionTermsRoute = SubscriptionTermsRouteImport.update({
+  id: '/subscription-terms',
+  path: '/subscription-terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAnythingRoute = ApiAnythingRouteImport.update({
+  id: '/api/anything',
+  path: '/api/anything',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBillingRoute = ApiBillingRouteImport.update({
+  id: '/api/billing',
+  path: '/api/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCallFollowupRoute = ApiCallFollowupRouteImport.update({
+  id: '/api/call-followup',
+  path: '/api/call-followup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCallVisionRoute = ApiCallVisionRouteImport.update({
+  id: '/api/call-vision',
+  path: '/api/call-vision',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCeyoChatRoute = ApiCeyoChatRouteImport.update({
+  id: '/api/ceyo-chat',
+  path: '/api/ceyo-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCeyoTaskRoute = ApiCeyoTaskRouteImport.update({
+  id: '/api/ceyo-task',
+  path: '/api/ceyo-task',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiClerkRoute = ApiClerkRouteImport.update({
+  id: '/api/clerk',
+  path: '/api/clerk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiComputerAgentRoute = ApiComputerAgentRouteImport.update({
+  id: '/api/computer-agent',
+  path: '/api/computer-agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDeepResearchRoute = ApiDeepResearchRouteImport.update({
+  id: '/api/deep-research',
+  path: '/api/deep-research',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDevAdminRoute = ApiDevAdminRouteImport.update({
+  id: '/api/dev-admin',
+  path: '/api/dev-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDevAgentRoute = ApiDevAgentRouteImport.update({
+  id: '/api/dev-agent',
+  path: '/api/dev-agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLongRunRoute = ApiLongRunRouteImport.update({
+  id: '/api/long-run',
+  path: '/api/long-run',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiManusAdminRoute = ApiManusAdminRouteImport.update({
+  id: '/api/manus-admin',
+  path: '/api/manus-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMarketNewsRoute = ApiMarketNewsRouteImport.update({
+  id: '/api/market-news',
+  path: '/api/market-news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMcpRoute = ApiMcpRouteImport.update({
+  id: '/api/mcp',
+  path: '/api/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPeopleBotRoute = ApiPeopleBotRouteImport.update({
+  id: '/api/people-bot',
+  path: '/api/people-bot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPhoneRoute = ApiPhoneRouteImport.update({
+  id: '/api/phone',
+  path: '/api/phone',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReadUrlRoute = ApiReadUrlRouteImport.update({
+  id: '/api/read-url',
+  path: '/api/read-url',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRenderPdfRoute = ApiRenderPdfRouteImport.update({
+  id: '/api/render-pdf',
+  path: '/api/render-pdf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTradeableAssetsRoute = ApiTradeableAssetsRouteImport.update({
+  id: '/api/tradeable-assets',
+  path: '/api/tradeable-assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
+  id: '/api/transcribe',
+  path: '/api/transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVideoCallRoute = ApiVideoCallRouteImport.update({
+  id: '/api/video-call',
+  path: '/api/video-call',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVoiceRoute = ApiVoiceRouteImport.update({
+  id: '/api/voice',
+  path: '/api/voice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVoiceCallRoute = ApiVoiceCallRouteImport.update({
+  id: '/api/voice-call',
+  path: '/api/voice-call',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVoiceTranscribeRoute = ApiVoiceTranscribeRouteImport.update({
+  id: '/api/voice-transcribe',
+  path: '/api/voice-transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWalletRoute = ApiWalletRouteImport.update({
+  id: '/api/wallet',
+  path: '/api/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWalletActionRoute = ApiWalletActionRouteImport.update({
+  id: '/api/wallet-action',
+  path: '/api/wallet-action',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebSearchRoute = ApiWebSearchRouteImport.update({
+  id: '/api/web-search',
+  path: '/api/web-search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArIndexRoute = ArIndexRouteImport.update({
+  id: '/ar/',
+  path: '/ar/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArCountryRoute = ArCountryRouteImport.update({
+  id: '/ar/$country',
+  path: '/ar/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthNativeReturnRoute = AuthNativeReturnRouteImport.update({
+  id: '/auth/native-return',
+  path: '/auth/native-return',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareIndexRoute = CompareIndexRouteImport.update({
+  id: '/compare/',
+  path: '/compare/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareToolRoute = CompareToolRouteImport.update({
+  id: '/compare/$tool',
+  path: '/compare/$tool',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CountriesIndexRoute = CountriesIndexRouteImport.update({
+  id: '/countries/',
+  path: '/countries/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CountriesSlugRoute = CountriesSlugRouteImport.update({
+  id: '/countries/$slug',
+  path: '/countries/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeIndexRoute = DeIndexRouteImport.update({
+  id: '/de/',
+  path: '/de/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeCountryRoute = DeCountryRouteImport.update({
+  id: '/de/$country',
+  path: '/de/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnIndexRoute = EnIndexRouteImport.update({
+  id: '/en/',
+  path: '/en/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnCountryRoute = EnCountryRouteImport.update({
+  id: '/en/$country',
+  path: '/en/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EsIndexRoute = EsIndexRouteImport.update({
+  id: '/es/',
+  path: '/es/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EsCountryRoute = EsCountryRouteImport.update({
+  id: '/es/$country',
+  path: '/es/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FrIndexRoute = FrIndexRouteImport.update({
+  id: '/fr/',
+  path: '/fr/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FrCountryRoute = FrCountryRouteImport.update({
+  id: '/fr/$country',
+  path: '/fr/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HiIndexRoute = HiIndexRouteImport.update({
+  id: '/hi/',
+  path: '/hi/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HiCountryRoute = HiCountryRouteImport.update({
+  id: '/hi/$country',
+  path: '/hi/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PtIndexRoute = PtIndexRouteImport.update({
+  id: '/pt/',
+  path: '/pt/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PtCountryRoute = PtCountryRouteImport.update({
+  id: '/pt/$country',
+  path: '/pt/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RuIndexRoute = RuIndexRouteImport.update({
+  id: '/ru/',
+  path: '/ru/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RuCountryRoute = RuCountryRouteImport.update({
+  id: '/ru/$country',
+  path: '/ru/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrIndexRoute = TrIndexRouteImport.update({
+  id: '/tr/',
+  path: '/tr/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrCountryRoute = TrCountryRouteImport.update({
+  id: '/tr/$country',
+  path: '/tr/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ZhIndexRoute = ZhIndexRouteImport.update({
+  id: '/zh/',
+  path: '/zh/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ZhCountryRoute = ZhCountryRouteImport.update({
+  id: '/zh/$country',
+  path: '/zh/$country',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentSplatRoute = ApiAgentSplatRouteImport.update({
+  id: '/api/agent/$',
+  path: '/api/agent/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCeyoJobsRoute = ApiPublicCeyoJobsRouteImport.update({
+  id: '/api/public/ceyo-jobs',
+  path: '/api/public/ceyo-jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCeyoRoutinesRoute = ApiPublicCeyoRoutinesRouteImport.update({
+  id: '/api/public/ceyo-routines',
+  path: '/api/public/ceyo-routines',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicConfigStatusRoute = ApiPublicConfigStatusRouteImport.update({
+  id: '/api/public/config-status',
+  path: '/api/public/config-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicFxRoute = ApiPublicFxRouteImport.update({
+  id: '/api/public/fx',
+  path: '/api/public/fx',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicGeoRoute = ApiPublicGeoRouteImport.update({
+  id: '/api/public/geo',
+  path: '/api/public/geo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicKashierWebhookRoute = ApiPublicKashierWebhookRouteImport.update({
+  id: '/api/public/kashier-webhook',
+  path: '/api/public/kashier-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicRefVisitRoute = ApiPublicRefVisitRouteImport.update({
+  id: '/api/public/ref-visit',
+  path: '/api/public/ref-visit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicRemindersTickRoute = ApiPublicRemindersTickRouteImport.update({
+  id: '/api/public/reminders-tick',
+  path: '/api/public/reminders-tick',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelegramKeysRoute = ApiPublicTelegramKeysRouteImport.update({
+  id: '/api/public/telegram-keys',
+  path: '/api/public/telegram-keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelnyxVoiceRoute = ApiPublicTelnyxVoiceRouteImport.update({
+  id: '/api/public/telnyx-voice',
+  path: '/api/public/telnyx-voice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAgentToolsTokenRoute =
+  ApiPublicAgentToolsTokenRouteImport.update({
+    id: '/api/public/agent-tools/$token',
+    path: '/api/public/agent-tools/$token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicChannelsTelegramRoute =
+  ApiPublicChannelsTelegramRouteImport.update({
+    id: '/api/public/channels/telegram',
+    path: '/api/public/channels/telegram',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicChannelsXPollRoute = ApiPublicChannelsXPollRouteImport.update({
+  id: '/api/public/channels/x-poll',
+  path: '/api/public/channels/x-poll',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicChannelsXchatRoute = ApiPublicChannelsXchatRouteImport.update({
+  id: '/api/public/channels/xchat',
+  path: '/api/public/channels/xchat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicMediaStatusRunIdRoute =
+  ApiPublicMediaStatusRunIdRouteImport.update({
+    id: '/api/public/media-status/$runId',
+    path: '/api/public/media-status/$runId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicSiteSiteIdRoute = ApiPublicSiteSiteIdRouteImport.update({
+  id: '/api/public/site/$siteId',
+  path: '/api/public/site/$siteId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTgBotDocIdRoute = ApiPublicTgBotDocIdRouteImport.update({
+  id: '/api/public/tg-bot/$docId',
+  path: '/api/public/tg-bot/$docId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCeyoHookRoutineIdSigRoute =
+  ApiPublicCeyoHookRoutineIdSigRouteImport.update({
+    id: '/api/public/ceyo-hook/$routineId/$sig',
+    path: '/api/public/ceyo-hook/$routineId/$sig',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicMediaRunIdIndexRoute =
+  ApiPublicMediaRunIdIndexRouteImport.update({
+    id: '/api/public/media/$runId/$index',
+    path: '/api/public/media/$runId/$index',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/about': typeof AboutRoute
+  '/connected': typeof ConnectedRoute
+  '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/security': typeof SecurityRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/subscription-terms': typeof SubscriptionTermsRoute
+  '/terms': typeof TermsRoute
+  '/api/anything': typeof ApiAnythingRoute
+  '/api/billing': typeof ApiBillingRoute
+  '/api/call-followup': typeof ApiCallFollowupRoute
+  '/api/call-vision': typeof ApiCallVisionRoute
+  '/api/ceyo-chat': typeof ApiCeyoChatRoute
+  '/api/ceyo-task': typeof ApiCeyoTaskRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/clerk': typeof ApiClerkRoute
+  '/api/computer-agent': typeof ApiComputerAgentRoute
+  '/api/deep-research': typeof ApiDeepResearchRoute
+  '/api/dev-admin': typeof ApiDevAdminRoute
+  '/api/dev-agent': typeof ApiDevAgentRoute
+  '/api/long-run': typeof ApiLongRunRoute
+  '/api/manus-admin': typeof ApiManusAdminRoute
+  '/api/market-news': typeof ApiMarketNewsRoute
+  '/api/mcp': typeof ApiMcpRoute
+  '/api/people-bot': typeof ApiPeopleBotRoute
+  '/api/phone': typeof ApiPhoneRoute
+  '/api/read-url': typeof ApiReadUrlRoute
+  '/api/render-pdf': typeof ApiRenderPdfRoute
+  '/api/tradeable-assets': typeof ApiTradeableAssetsRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/video-call': typeof ApiVideoCallRoute
+  '/api/voice': typeof ApiVoiceRoute
+  '/api/voice-call': typeof ApiVoiceCallRoute
+  '/api/voice-transcribe': typeof ApiVoiceTranscribeRoute
+  '/api/wallet': typeof ApiWalletRoute
+  '/api/wallet-action': typeof ApiWalletActionRoute
+  '/api/web-search': typeof ApiWebSearchRoute
+  '/ar/$country': typeof ArCountryRoute
+  '/auth/native-return': typeof AuthNativeReturnRoute
+  '/compare/$tool': typeof CompareToolRoute
+  '/countries/$slug': typeof CountriesSlugRoute
+  '/de/$country': typeof DeCountryRoute
+  '/en/$country': typeof EnCountryRoute
+  '/es/$country': typeof EsCountryRoute
+  '/fr/$country': typeof FrCountryRoute
+  '/hi/$country': typeof HiCountryRoute
+  '/pt/$country': typeof PtCountryRoute
+  '/ru/$country': typeof RuCountryRoute
+  '/tr/$country': typeof TrCountryRoute
+  '/zh/$country': typeof ZhCountryRoute
+  '/ar/': typeof ArIndexRoute
+  '/compare/': typeof CompareIndexRoute
+  '/countries/': typeof CountriesIndexRoute
+  '/de/': typeof DeIndexRoute
+  '/en/': typeof EnIndexRoute
+  '/es/': typeof EsIndexRoute
+  '/fr/': typeof FrIndexRoute
+  '/hi/': typeof HiIndexRoute
+  '/pt/': typeof PtIndexRoute
+  '/ru/': typeof RuIndexRoute
+  '/tr/': typeof TrIndexRoute
+  '/zh/': typeof ZhIndexRoute
+  '/api/agent/$': typeof ApiAgentSplatRoute
+  '/api/public/ceyo-jobs': typeof ApiPublicCeyoJobsRoute
+  '/api/public/ceyo-routines': typeof ApiPublicCeyoRoutinesRoute
+  '/api/public/config-status': typeof ApiPublicConfigStatusRoute
+  '/api/public/fx': typeof ApiPublicFxRoute
+  '/api/public/geo': typeof ApiPublicGeoRoute
+  '/api/public/kashier-webhook': typeof ApiPublicKashierWebhookRoute
+  '/api/public/ref-visit': typeof ApiPublicRefVisitRoute
+  '/api/public/reminders-tick': typeof ApiPublicRemindersTickRoute
+  '/api/public/telegram-keys': typeof ApiPublicTelegramKeysRoute
+  '/api/public/telnyx-voice': typeof ApiPublicTelnyxVoiceRoute
+  '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
+  '/api/public/channels/telegram': typeof ApiPublicChannelsTelegramRoute
+  '/api/public/channels/x-poll': typeof ApiPublicChannelsXPollRoute
+  '/api/public/channels/xchat': typeof ApiPublicChannelsXchatRoute
+  '/api/public/media-status/$runId': typeof ApiPublicMediaStatusRunIdRoute
+  '/api/public/site/$siteId': typeof ApiPublicSiteSiteIdRoute
+  '/api/public/tg-bot/$docId': typeof ApiPublicTgBotDocIdRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/api/public/ceyo-hook/$routineId/$sig': typeof ApiPublicCeyoHookRoutineIdSigRoute
+  '/api/public/media/$runId/$index': typeof ApiPublicMediaRunIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/about': typeof AboutRoute
+  '/connected': typeof ConnectedRoute
+  '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/security': typeof SecurityRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/subscription-terms': typeof SubscriptionTermsRoute
+  '/terms': typeof TermsRoute
+  '/api/anything': typeof ApiAnythingRoute
+  '/api/billing': typeof ApiBillingRoute
+  '/api/call-followup': typeof ApiCallFollowupRoute
+  '/api/call-vision': typeof ApiCallVisionRoute
+  '/api/ceyo-chat': typeof ApiCeyoChatRoute
+  '/api/ceyo-task': typeof ApiCeyoTaskRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/clerk': typeof ApiClerkRoute
+  '/api/computer-agent': typeof ApiComputerAgentRoute
+  '/api/deep-research': typeof ApiDeepResearchRoute
+  '/api/dev-admin': typeof ApiDevAdminRoute
+  '/api/dev-agent': typeof ApiDevAgentRoute
+  '/api/long-run': typeof ApiLongRunRoute
+  '/api/manus-admin': typeof ApiManusAdminRoute
+  '/api/market-news': typeof ApiMarketNewsRoute
+  '/api/mcp': typeof ApiMcpRoute
+  '/api/people-bot': typeof ApiPeopleBotRoute
+  '/api/phone': typeof ApiPhoneRoute
+  '/api/read-url': typeof ApiReadUrlRoute
+  '/api/render-pdf': typeof ApiRenderPdfRoute
+  '/api/tradeable-assets': typeof ApiTradeableAssetsRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/video-call': typeof ApiVideoCallRoute
+  '/api/voice': typeof ApiVoiceRoute
+  '/api/voice-call': typeof ApiVoiceCallRoute
+  '/api/voice-transcribe': typeof ApiVoiceTranscribeRoute
+  '/api/wallet': typeof ApiWalletRoute
+  '/api/wallet-action': typeof ApiWalletActionRoute
+  '/api/web-search': typeof ApiWebSearchRoute
+  '/ar/$country': typeof ArCountryRoute
+  '/auth/native-return': typeof AuthNativeReturnRoute
+  '/compare/$tool': typeof CompareToolRoute
+  '/countries/$slug': typeof CountriesSlugRoute
+  '/de/$country': typeof DeCountryRoute
+  '/en/$country': typeof EnCountryRoute
+  '/es/$country': typeof EsCountryRoute
+  '/fr/$country': typeof FrCountryRoute
+  '/hi/$country': typeof HiCountryRoute
+  '/pt/$country': typeof PtCountryRoute
+  '/ru/$country': typeof RuCountryRoute
+  '/tr/$country': typeof TrCountryRoute
+  '/zh/$country': typeof ZhCountryRoute
+  '/ar': typeof ArIndexRoute
+  '/compare': typeof CompareIndexRoute
+  '/countries': typeof CountriesIndexRoute
+  '/de': typeof DeIndexRoute
+  '/en': typeof EnIndexRoute
+  '/es': typeof EsIndexRoute
+  '/fr': typeof FrIndexRoute
+  '/hi': typeof HiIndexRoute
+  '/pt': typeof PtIndexRoute
+  '/ru': typeof RuIndexRoute
+  '/tr': typeof TrIndexRoute
+  '/zh': typeof ZhIndexRoute
+  '/api/agent/$': typeof ApiAgentSplatRoute
+  '/api/public/ceyo-jobs': typeof ApiPublicCeyoJobsRoute
+  '/api/public/ceyo-routines': typeof ApiPublicCeyoRoutinesRoute
+  '/api/public/config-status': typeof ApiPublicConfigStatusRoute
+  '/api/public/fx': typeof ApiPublicFxRoute
+  '/api/public/geo': typeof ApiPublicGeoRoute
+  '/api/public/kashier-webhook': typeof ApiPublicKashierWebhookRoute
+  '/api/public/ref-visit': typeof ApiPublicRefVisitRoute
+  '/api/public/reminders-tick': typeof ApiPublicRemindersTickRoute
+  '/api/public/telegram-keys': typeof ApiPublicTelegramKeysRoute
+  '/api/public/telnyx-voice': typeof ApiPublicTelnyxVoiceRoute
+  '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
+  '/api/public/channels/telegram': typeof ApiPublicChannelsTelegramRoute
+  '/api/public/channels/x-poll': typeof ApiPublicChannelsXPollRoute
+  '/api/public/channels/xchat': typeof ApiPublicChannelsXchatRoute
+  '/api/public/media-status/$runId': typeof ApiPublicMediaStatusRunIdRoute
+  '/api/public/site/$siteId': typeof ApiPublicSiteSiteIdRoute
+  '/api/public/tg-bot/$docId': typeof ApiPublicTgBotDocIdRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/api/public/ceyo-hook/$routineId/$sig': typeof ApiPublicCeyoHookRoutineIdSigRoute
+  '/api/public/media/$runId/$index': typeof ApiPublicMediaRunIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/about': typeof AboutRoute
+  '/connected': typeof ConnectedRoute
+  '/contact': typeof ContactRoute
+  '/cookies': typeof CookiesRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/security': typeof SecurityRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/subscription-terms': typeof SubscriptionTermsRoute
+  '/terms': typeof TermsRoute
+  '/api/anything': typeof ApiAnythingRoute
+  '/api/billing': typeof ApiBillingRoute
+  '/api/call-followup': typeof ApiCallFollowupRoute
+  '/api/call-vision': typeof ApiCallVisionRoute
+  '/api/ceyo-chat': typeof ApiCeyoChatRoute
+  '/api/ceyo-task': typeof ApiCeyoTaskRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/clerk': typeof ApiClerkRoute
+  '/api/computer-agent': typeof ApiComputerAgentRoute
+  '/api/deep-research': typeof ApiDeepResearchRoute
+  '/api/dev-admin': typeof ApiDevAdminRoute
+  '/api/dev-agent': typeof ApiDevAgentRoute
+  '/api/long-run': typeof ApiLongRunRoute
+  '/api/manus-admin': typeof ApiManusAdminRoute
+  '/api/market-news': typeof ApiMarketNewsRoute
+  '/api/mcp': typeof ApiMcpRoute
+  '/api/people-bot': typeof ApiPeopleBotRoute
+  '/api/phone': typeof ApiPhoneRoute
+  '/api/read-url': typeof ApiReadUrlRoute
+  '/api/render-pdf': typeof ApiRenderPdfRoute
+  '/api/tradeable-assets': typeof ApiTradeableAssetsRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
+  '/api/video-call': typeof ApiVideoCallRoute
+  '/api/voice': typeof ApiVoiceRoute
+  '/api/voice-call': typeof ApiVoiceCallRoute
+  '/api/voice-transcribe': typeof ApiVoiceTranscribeRoute
+  '/api/wallet': typeof ApiWalletRoute
+  '/api/wallet-action': typeof ApiWalletActionRoute
+  '/api/web-search': typeof ApiWebSearchRoute
+  '/ar/$country': typeof ArCountryRoute
+  '/auth/native-return': typeof AuthNativeReturnRoute
+  '/compare/$tool': typeof CompareToolRoute
+  '/countries/$slug': typeof CountriesSlugRoute
+  '/de/$country': typeof DeCountryRoute
+  '/en/$country': typeof EnCountryRoute
+  '/es/$country': typeof EsCountryRoute
+  '/fr/$country': typeof FrCountryRoute
+  '/hi/$country': typeof HiCountryRoute
+  '/pt/$country': typeof PtCountryRoute
+  '/ru/$country': typeof RuCountryRoute
+  '/tr/$country': typeof TrCountryRoute
+  '/zh/$country': typeof ZhCountryRoute
+  '/ar/': typeof ArIndexRoute
+  '/compare/': typeof CompareIndexRoute
+  '/countries/': typeof CountriesIndexRoute
+  '/de/': typeof DeIndexRoute
+  '/en/': typeof EnIndexRoute
+  '/es/': typeof EsIndexRoute
+  '/fr/': typeof FrIndexRoute
+  '/hi/': typeof HiIndexRoute
+  '/pt/': typeof PtIndexRoute
+  '/ru/': typeof RuIndexRoute
+  '/tr/': typeof TrIndexRoute
+  '/zh/': typeof ZhIndexRoute
+  '/api/agent/$': typeof ApiAgentSplatRoute
+  '/api/public/ceyo-jobs': typeof ApiPublicCeyoJobsRoute
+  '/api/public/ceyo-routines': typeof ApiPublicCeyoRoutinesRoute
+  '/api/public/config-status': typeof ApiPublicConfigStatusRoute
+  '/api/public/fx': typeof ApiPublicFxRoute
+  '/api/public/geo': typeof ApiPublicGeoRoute
+  '/api/public/kashier-webhook': typeof ApiPublicKashierWebhookRoute
+  '/api/public/ref-visit': typeof ApiPublicRefVisitRoute
+  '/api/public/reminders-tick': typeof ApiPublicRemindersTickRoute
+  '/api/public/telegram-keys': typeof ApiPublicTelegramKeysRoute
+  '/api/public/telnyx-voice': typeof ApiPublicTelnyxVoiceRoute
+  '/api/public/agent-tools/$token': typeof ApiPublicAgentToolsTokenRoute
+  '/api/public/channels/telegram': typeof ApiPublicChannelsTelegramRoute
+  '/api/public/channels/x-poll': typeof ApiPublicChannelsXPollRoute
+  '/api/public/channels/xchat': typeof ApiPublicChannelsXchatRoute
+  '/api/public/media-status/$runId': typeof ApiPublicMediaStatusRunIdRoute
+  '/api/public/site/$siteId': typeof ApiPublicSiteSiteIdRoute
+  '/api/public/tg-bot/$docId': typeof ApiPublicTgBotDocIdRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/api/public/ceyo-hook/$routineId/$sig': typeof ApiPublicCeyoHookRoutineIdSigRoute
+  '/api/public/media/$runId/$index': typeof ApiPublicMediaRunIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/about'
+    | '/connected'
+    | '/contact'
+    | '/cookies'
+    | '/pricing'
+    | '/privacy'
+    | '/security'
+    | '/sitemap.xml'
+    | '/subscription-terms'
+    | '/terms'
+    | '/api/anything'
+    | '/api/billing'
+    | '/api/call-followup'
+    | '/api/call-vision'
+    | '/api/ceyo-chat'
+    | '/api/ceyo-task'
+    | '/api/chat'
+    | '/api/clerk'
+    | '/api/computer-agent'
+    | '/api/deep-research'
+    | '/api/dev-admin'
+    | '/api/dev-agent'
+    | '/api/long-run'
+    | '/api/manus-admin'
+    | '/api/market-news'
+    | '/api/mcp'
+    | '/api/people-bot'
+    | '/api/phone'
+    | '/api/read-url'
+    | '/api/render-pdf'
+    | '/api/tradeable-assets'
+    | '/api/transcribe'
+    | '/api/video-call'
+    | '/api/voice'
+    | '/api/voice-call'
+    | '/api/voice-transcribe'
+    | '/api/wallet'
+    | '/api/wallet-action'
+    | '/api/web-search'
+    | '/ar/$country'
+    | '/auth/native-return'
+    | '/compare/$tool'
+    | '/countries/$slug'
+    | '/de/$country'
+    | '/en/$country'
+    | '/es/$country'
+    | '/fr/$country'
+    | '/hi/$country'
+    | '/pt/$country'
+    | '/ru/$country'
+    | '/tr/$country'
+    | '/zh/$country'
+    | '/ar/'
+    | '/compare/'
+    | '/countries/'
+    | '/de/'
+    | '/en/'
+    | '/es/'
+    | '/fr/'
+    | '/hi/'
+    | '/pt/'
+    | '/ru/'
+    | '/tr/'
+    | '/zh/'
+    | '/api/agent/$'
+    | '/api/public/ceyo-jobs'
+    | '/api/public/ceyo-routines'
+    | '/api/public/config-status'
+    | '/api/public/fx'
+    | '/api/public/geo'
+    | '/api/public/kashier-webhook'
+    | '/api/public/ref-visit'
+    | '/api/public/reminders-tick'
+    | '/api/public/telegram-keys'
+    | '/api/public/telnyx-voice'
+    | '/api/public/agent-tools/$token'
+    | '/api/public/channels/telegram'
+    | '/api/public/channels/x-poll'
+    | '/api/public/channels/xchat'
+    | '/api/public/media-status/$runId'
+    | '/api/public/site/$siteId'
+    | '/api/public/tg-bot/$docId'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
+    | '/lovable/email/transactional/preview'
+    | '/api/public/ceyo-hook/$routineId/$sig'
+    | '/api/public/media/$runId/$index'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/$'
+    | '/about'
+    | '/connected'
+    | '/contact'
+    | '/cookies'
+    | '/pricing'
+    | '/privacy'
+    | '/security'
+    | '/sitemap.xml'
+    | '/subscription-terms'
+    | '/terms'
+    | '/api/anything'
+    | '/api/billing'
+    | '/api/call-followup'
+    | '/api/call-vision'
+    | '/api/ceyo-chat'
+    | '/api/ceyo-task'
+    | '/api/chat'
+    | '/api/clerk'
+    | '/api/computer-agent'
+    | '/api/deep-research'
+    | '/api/dev-admin'
+    | '/api/dev-agent'
+    | '/api/long-run'
+    | '/api/manus-admin'
+    | '/api/market-news'
+    | '/api/mcp'
+    | '/api/people-bot'
+    | '/api/phone'
+    | '/api/read-url'
+    | '/api/render-pdf'
+    | '/api/tradeable-assets'
+    | '/api/transcribe'
+    | '/api/video-call'
+    | '/api/voice'
+    | '/api/voice-call'
+    | '/api/voice-transcribe'
+    | '/api/wallet'
+    | '/api/wallet-action'
+    | '/api/web-search'
+    | '/ar/$country'
+    | '/auth/native-return'
+    | '/compare/$tool'
+    | '/countries/$slug'
+    | '/de/$country'
+    | '/en/$country'
+    | '/es/$country'
+    | '/fr/$country'
+    | '/hi/$country'
+    | '/pt/$country'
+    | '/ru/$country'
+    | '/tr/$country'
+    | '/zh/$country'
+    | '/ar'
+    | '/compare'
+    | '/countries'
+    | '/de'
+    | '/en'
+    | '/es'
+    | '/fr'
+    | '/hi'
+    | '/pt'
+    | '/ru'
+    | '/tr'
+    | '/zh'
+    | '/api/agent/$'
+    | '/api/public/ceyo-jobs'
+    | '/api/public/ceyo-routines'
+    | '/api/public/config-status'
+    | '/api/public/fx'
+    | '/api/public/geo'
+    | '/api/public/kashier-webhook'
+    | '/api/public/ref-visit'
+    | '/api/public/reminders-tick'
+    | '/api/public/telegram-keys'
+    | '/api/public/telnyx-voice'
+    | '/api/public/agent-tools/$token'
+    | '/api/public/channels/telegram'
+    | '/api/public/channels/x-poll'
+    | '/api/public/channels/xchat'
+    | '/api/public/media-status/$runId'
+    | '/api/public/site/$siteId'
+    | '/api/public/tg-bot/$docId'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
+    | '/lovable/email/transactional/preview'
+    | '/api/public/ceyo-hook/$routineId/$sig'
+    | '/api/public/media/$runId/$index'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/about'
+    | '/connected'
+    | '/contact'
+    | '/cookies'
+    | '/pricing'
+    | '/privacy'
+    | '/security'
+    | '/sitemap.xml'
+    | '/subscription-terms'
+    | '/terms'
+    | '/api/anything'
+    | '/api/billing'
+    | '/api/call-followup'
+    | '/api/call-vision'
+    | '/api/ceyo-chat'
+    | '/api/ceyo-task'
+    | '/api/chat'
+    | '/api/clerk'
+    | '/api/computer-agent'
+    | '/api/deep-research'
+    | '/api/dev-admin'
+    | '/api/dev-agent'
+    | '/api/long-run'
+    | '/api/manus-admin'
+    | '/api/market-news'
+    | '/api/mcp'
+    | '/api/people-bot'
+    | '/api/phone'
+    | '/api/read-url'
+    | '/api/render-pdf'
+    | '/api/tradeable-assets'
+    | '/api/transcribe'
+    | '/api/video-call'
+    | '/api/voice'
+    | '/api/voice-call'
+    | '/api/voice-transcribe'
+    | '/api/wallet'
+    | '/api/wallet-action'
+    | '/api/web-search'
+    | '/ar/$country'
+    | '/auth/native-return'
+    | '/compare/$tool'
+    | '/countries/$slug'
+    | '/de/$country'
+    | '/en/$country'
+    | '/es/$country'
+    | '/fr/$country'
+    | '/hi/$country'
+    | '/pt/$country'
+    | '/ru/$country'
+    | '/tr/$country'
+    | '/zh/$country'
+    | '/ar/'
+    | '/compare/'
+    | '/countries/'
+    | '/de/'
+    | '/en/'
+    | '/es/'
+    | '/fr/'
+    | '/hi/'
+    | '/pt/'
+    | '/ru/'
+    | '/tr/'
+    | '/zh/'
+    | '/api/agent/$'
+    | '/api/public/ceyo-jobs'
+    | '/api/public/ceyo-routines'
+    | '/api/public/config-status'
+    | '/api/public/fx'
+    | '/api/public/geo'
+    | '/api/public/kashier-webhook'
+    | '/api/public/ref-visit'
+    | '/api/public/reminders-tick'
+    | '/api/public/telegram-keys'
+    | '/api/public/telnyx-voice'
+    | '/api/public/agent-tools/$token'
+    | '/api/public/channels/telegram'
+    | '/api/public/channels/x-poll'
+    | '/api/public/channels/xchat'
+    | '/api/public/media-status/$runId'
+    | '/api/public/site/$siteId'
+    | '/api/public/tg-bot/$docId'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
+    | '/lovable/email/transactional/preview'
+    | '/api/public/ceyo-hook/$routineId/$sig'
+    | '/api/public/media/$runId/$index'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
+  AboutRoute: typeof AboutRoute
+  ConnectedRoute: typeof ConnectedRoute
+  ContactRoute: typeof ContactRoute
+  CookiesRoute: typeof CookiesRoute
+  PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  SecurityRoute: typeof SecurityRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SubscriptionTermsRoute: typeof SubscriptionTermsRoute
+  TermsRoute: typeof TermsRoute
+  ApiAnythingRoute: typeof ApiAnythingRoute
+  ApiBillingRoute: typeof ApiBillingRoute
+  ApiCallFollowupRoute: typeof ApiCallFollowupRoute
+  ApiCallVisionRoute: typeof ApiCallVisionRoute
+  ApiCeyoChatRoute: typeof ApiCeyoChatRoute
+  ApiCeyoTaskRoute: typeof ApiCeyoTaskRoute
+  ApiChatRoute: typeof ApiChatRoute
+  ApiClerkRoute: typeof ApiClerkRoute
+  ApiComputerAgentRoute: typeof ApiComputerAgentRoute
+  ApiDeepResearchRoute: typeof ApiDeepResearchRoute
+  ApiDevAdminRoute: typeof ApiDevAdminRoute
+  ApiDevAgentRoute: typeof ApiDevAgentRoute
+  ApiLongRunRoute: typeof ApiLongRunRoute
+  ApiManusAdminRoute: typeof ApiManusAdminRoute
+  ApiMarketNewsRoute: typeof ApiMarketNewsRoute
+  ApiMcpRoute: typeof ApiMcpRoute
+  ApiPeopleBotRoute: typeof ApiPeopleBotRoute
+  ApiPhoneRoute: typeof ApiPhoneRoute
+  ApiReadUrlRoute: typeof ApiReadUrlRoute
+  ApiRenderPdfRoute: typeof ApiRenderPdfRoute
+  ApiTradeableAssetsRoute: typeof ApiTradeableAssetsRoute
+  ApiTranscribeRoute: typeof ApiTranscribeRoute
+  ApiVideoCallRoute: typeof ApiVideoCallRoute
+  ApiVoiceRoute: typeof ApiVoiceRoute
+  ApiVoiceCallRoute: typeof ApiVoiceCallRoute
+  ApiVoiceTranscribeRoute: typeof ApiVoiceTranscribeRoute
+  ApiWalletRoute: typeof ApiWalletRoute
+  ApiWalletActionRoute: typeof ApiWalletActionRoute
+  ApiWebSearchRoute: typeof ApiWebSearchRoute
+  ArCountryRoute: typeof ArCountryRoute
+  AuthNativeReturnRoute: typeof AuthNativeReturnRoute
+  CompareToolRoute: typeof CompareToolRoute
+  CountriesSlugRoute: typeof CountriesSlugRoute
+  DeCountryRoute: typeof DeCountryRoute
+  EnCountryRoute: typeof EnCountryRoute
+  EsCountryRoute: typeof EsCountryRoute
+  FrCountryRoute: typeof FrCountryRoute
+  HiCountryRoute: typeof HiCountryRoute
+  PtCountryRoute: typeof PtCountryRoute
+  RuCountryRoute: typeof RuCountryRoute
+  TrCountryRoute: typeof TrCountryRoute
+  ZhCountryRoute: typeof ZhCountryRoute
+  ArIndexRoute: typeof ArIndexRoute
+  CompareIndexRoute: typeof CompareIndexRoute
+  CountriesIndexRoute: typeof CountriesIndexRoute
+  DeIndexRoute: typeof DeIndexRoute
+  EnIndexRoute: typeof EnIndexRoute
+  EsIndexRoute: typeof EsIndexRoute
+  FrIndexRoute: typeof FrIndexRoute
+  HiIndexRoute: typeof HiIndexRoute
+  PtIndexRoute: typeof PtIndexRoute
+  RuIndexRoute: typeof RuIndexRoute
+  TrIndexRoute: typeof TrIndexRoute
+  ZhIndexRoute: typeof ZhIndexRoute
+  ApiAgentSplatRoute: typeof ApiAgentSplatRoute
+  ApiPublicCeyoJobsRoute: typeof ApiPublicCeyoJobsRoute
+  ApiPublicCeyoRoutinesRoute: typeof ApiPublicCeyoRoutinesRoute
+  ApiPublicConfigStatusRoute: typeof ApiPublicConfigStatusRoute
+  ApiPublicFxRoute: typeof ApiPublicFxRoute
+  ApiPublicGeoRoute: typeof ApiPublicGeoRoute
+  ApiPublicKashierWebhookRoute: typeof ApiPublicKashierWebhookRoute
+  ApiPublicRefVisitRoute: typeof ApiPublicRefVisitRoute
+  ApiPublicRemindersTickRoute: typeof ApiPublicRemindersTickRoute
+  ApiPublicTelegramKeysRoute: typeof ApiPublicTelegramKeysRoute
+  ApiPublicTelnyxVoiceRoute: typeof ApiPublicTelnyxVoiceRoute
+  ApiPublicAgentToolsTokenRoute: typeof ApiPublicAgentToolsTokenRoute
+  ApiPublicChannelsTelegramRoute: typeof ApiPublicChannelsTelegramRoute
+  ApiPublicChannelsXPollRoute: typeof ApiPublicChannelsXPollRoute
+  ApiPublicChannelsXchatRoute: typeof ApiPublicChannelsXchatRoute
+  ApiPublicMediaStatusRunIdRoute: typeof ApiPublicMediaStatusRunIdRoute
+  ApiPublicSiteSiteIdRoute: typeof ApiPublicSiteSiteIdRoute
+  ApiPublicTgBotDocIdRoute: typeof ApiPublicTgBotDocIdRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  ApiPublicCeyoHookRoutineIdSigRoute: typeof ApiPublicCeyoHookRoutineIdSigRoute
+  ApiPublicMediaRunIdIndexRoute: typeof ApiPublicMediaRunIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +1202,715 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connected': {
+      id: '/connected'
+      path: '/connected'
+      fullPath: '/connected'
+      preLoaderRoute: typeof ConnectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/security': {
+      id: '/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/subscription-terms': {
+      id: '/subscription-terms'
+      path: '/subscription-terms'
+      fullPath: '/subscription-terms'
+      preLoaderRoute: typeof SubscriptionTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/anything': {
+      id: '/api/anything'
+      path: '/api/anything'
+      fullPath: '/api/anything'
+      preLoaderRoute: typeof ApiAnythingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/billing': {
+      id: '/api/billing'
+      path: '/api/billing'
+      fullPath: '/api/billing'
+      preLoaderRoute: typeof ApiBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/call-followup': {
+      id: '/api/call-followup'
+      path: '/api/call-followup'
+      fullPath: '/api/call-followup'
+      preLoaderRoute: typeof ApiCallFollowupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/call-vision': {
+      id: '/api/call-vision'
+      path: '/api/call-vision'
+      fullPath: '/api/call-vision'
+      preLoaderRoute: typeof ApiCallVisionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ceyo-chat': {
+      id: '/api/ceyo-chat'
+      path: '/api/ceyo-chat'
+      fullPath: '/api/ceyo-chat'
+      preLoaderRoute: typeof ApiCeyoChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ceyo-task': {
+      id: '/api/ceyo-task'
+      path: '/api/ceyo-task'
+      fullPath: '/api/ceyo-task'
+      preLoaderRoute: typeof ApiCeyoTaskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/clerk': {
+      id: '/api/clerk'
+      path: '/api/clerk'
+      fullPath: '/api/clerk'
+      preLoaderRoute: typeof ApiClerkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/computer-agent': {
+      id: '/api/computer-agent'
+      path: '/api/computer-agent'
+      fullPath: '/api/computer-agent'
+      preLoaderRoute: typeof ApiComputerAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/deep-research': {
+      id: '/api/deep-research'
+      path: '/api/deep-research'
+      fullPath: '/api/deep-research'
+      preLoaderRoute: typeof ApiDeepResearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/dev-admin': {
+      id: '/api/dev-admin'
+      path: '/api/dev-admin'
+      fullPath: '/api/dev-admin'
+      preLoaderRoute: typeof ApiDevAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/dev-agent': {
+      id: '/api/dev-agent'
+      path: '/api/dev-agent'
+      fullPath: '/api/dev-agent'
+      preLoaderRoute: typeof ApiDevAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/long-run': {
+      id: '/api/long-run'
+      path: '/api/long-run'
+      fullPath: '/api/long-run'
+      preLoaderRoute: typeof ApiLongRunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/manus-admin': {
+      id: '/api/manus-admin'
+      path: '/api/manus-admin'
+      fullPath: '/api/manus-admin'
+      preLoaderRoute: typeof ApiManusAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/market-news': {
+      id: '/api/market-news'
+      path: '/api/market-news'
+      fullPath: '/api/market-news'
+      preLoaderRoute: typeof ApiMarketNewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mcp': {
+      id: '/api/mcp'
+      path: '/api/mcp'
+      fullPath: '/api/mcp'
+      preLoaderRoute: typeof ApiMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/people-bot': {
+      id: '/api/people-bot'
+      path: '/api/people-bot'
+      fullPath: '/api/people-bot'
+      preLoaderRoute: typeof ApiPeopleBotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/phone': {
+      id: '/api/phone'
+      path: '/api/phone'
+      fullPath: '/api/phone'
+      preLoaderRoute: typeof ApiPhoneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/read-url': {
+      id: '/api/read-url'
+      path: '/api/read-url'
+      fullPath: '/api/read-url'
+      preLoaderRoute: typeof ApiReadUrlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/render-pdf': {
+      id: '/api/render-pdf'
+      path: '/api/render-pdf'
+      fullPath: '/api/render-pdf'
+      preLoaderRoute: typeof ApiRenderPdfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tradeable-assets': {
+      id: '/api/tradeable-assets'
+      path: '/api/tradeable-assets'
+      fullPath: '/api/tradeable-assets'
+      preLoaderRoute: typeof ApiTradeableAssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/transcribe': {
+      id: '/api/transcribe'
+      path: '/api/transcribe'
+      fullPath: '/api/transcribe'
+      preLoaderRoute: typeof ApiTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/video-call': {
+      id: '/api/video-call'
+      path: '/api/video-call'
+      fullPath: '/api/video-call'
+      preLoaderRoute: typeof ApiVideoCallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/voice': {
+      id: '/api/voice'
+      path: '/api/voice'
+      fullPath: '/api/voice'
+      preLoaderRoute: typeof ApiVoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/voice-call': {
+      id: '/api/voice-call'
+      path: '/api/voice-call'
+      fullPath: '/api/voice-call'
+      preLoaderRoute: typeof ApiVoiceCallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/voice-transcribe': {
+      id: '/api/voice-transcribe'
+      path: '/api/voice-transcribe'
+      fullPath: '/api/voice-transcribe'
+      preLoaderRoute: typeof ApiVoiceTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/wallet': {
+      id: '/api/wallet'
+      path: '/api/wallet'
+      fullPath: '/api/wallet'
+      preLoaderRoute: typeof ApiWalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/wallet-action': {
+      id: '/api/wallet-action'
+      path: '/api/wallet-action'
+      fullPath: '/api/wallet-action'
+      preLoaderRoute: typeof ApiWalletActionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/web-search': {
+      id: '/api/web-search'
+      path: '/api/web-search'
+      fullPath: '/api/web-search'
+      preLoaderRoute: typeof ApiWebSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ar/': {
+      id: '/ar/'
+      path: '/ar'
+      fullPath: '/ar/'
+      preLoaderRoute: typeof ArIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ar/$country': {
+      id: '/ar/$country'
+      path: '/ar/$country'
+      fullPath: '/ar/$country'
+      preLoaderRoute: typeof ArCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/native-return': {
+      id: '/auth/native-return'
+      path: '/auth/native-return'
+      fullPath: '/auth/native-return'
+      preLoaderRoute: typeof AuthNativeReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare/': {
+      id: '/compare/'
+      path: '/compare'
+      fullPath: '/compare/'
+      preLoaderRoute: typeof CompareIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare/$tool': {
+      id: '/compare/$tool'
+      path: '/compare/$tool'
+      fullPath: '/compare/$tool'
+      preLoaderRoute: typeof CompareToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/countries/': {
+      id: '/countries/'
+      path: '/countries'
+      fullPath: '/countries/'
+      preLoaderRoute: typeof CountriesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/countries/$slug': {
+      id: '/countries/$slug'
+      path: '/countries/$slug'
+      fullPath: '/countries/$slug'
+      preLoaderRoute: typeof CountriesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/de/': {
+      id: '/de/'
+      path: '/de'
+      fullPath: '/de/'
+      preLoaderRoute: typeof DeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/de/$country': {
+      id: '/de/$country'
+      path: '/de/$country'
+      fullPath: '/de/$country'
+      preLoaderRoute: typeof DeCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/en/': {
+      id: '/en/'
+      path: '/en'
+      fullPath: '/en/'
+      preLoaderRoute: typeof EnIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/en/$country': {
+      id: '/en/$country'
+      path: '/en/$country'
+      fullPath: '/en/$country'
+      preLoaderRoute: typeof EnCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/es/': {
+      id: '/es/'
+      path: '/es'
+      fullPath: '/es/'
+      preLoaderRoute: typeof EsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/es/$country': {
+      id: '/es/$country'
+      path: '/es/$country'
+      fullPath: '/es/$country'
+      preLoaderRoute: typeof EsCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fr/': {
+      id: '/fr/'
+      path: '/fr'
+      fullPath: '/fr/'
+      preLoaderRoute: typeof FrIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fr/$country': {
+      id: '/fr/$country'
+      path: '/fr/$country'
+      fullPath: '/fr/$country'
+      preLoaderRoute: typeof FrCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hi/': {
+      id: '/hi/'
+      path: '/hi'
+      fullPath: '/hi/'
+      preLoaderRoute: typeof HiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hi/$country': {
+      id: '/hi/$country'
+      path: '/hi/$country'
+      fullPath: '/hi/$country'
+      preLoaderRoute: typeof HiCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pt/': {
+      id: '/pt/'
+      path: '/pt'
+      fullPath: '/pt/'
+      preLoaderRoute: typeof PtIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pt/$country': {
+      id: '/pt/$country'
+      path: '/pt/$country'
+      fullPath: '/pt/$country'
+      preLoaderRoute: typeof PtCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ru/': {
+      id: '/ru/'
+      path: '/ru'
+      fullPath: '/ru/'
+      preLoaderRoute: typeof RuIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ru/$country': {
+      id: '/ru/$country'
+      path: '/ru/$country'
+      fullPath: '/ru/$country'
+      preLoaderRoute: typeof RuCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tr/': {
+      id: '/tr/'
+      path: '/tr'
+      fullPath: '/tr/'
+      preLoaderRoute: typeof TrIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tr/$country': {
+      id: '/tr/$country'
+      path: '/tr/$country'
+      fullPath: '/tr/$country'
+      preLoaderRoute: typeof TrCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/zh/': {
+      id: '/zh/'
+      path: '/zh'
+      fullPath: '/zh/'
+      preLoaderRoute: typeof ZhIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/zh/$country': {
+      id: '/zh/$country'
+      path: '/zh/$country'
+      fullPath: '/zh/$country'
+      preLoaderRoute: typeof ZhCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent/$': {
+      id: '/api/agent/$'
+      path: '/api/agent/$'
+      fullPath: '/api/agent/$'
+      preLoaderRoute: typeof ApiAgentSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ceyo-jobs': {
+      id: '/api/public/ceyo-jobs'
+      path: '/api/public/ceyo-jobs'
+      fullPath: '/api/public/ceyo-jobs'
+      preLoaderRoute: typeof ApiPublicCeyoJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ceyo-routines': {
+      id: '/api/public/ceyo-routines'
+      path: '/api/public/ceyo-routines'
+      fullPath: '/api/public/ceyo-routines'
+      preLoaderRoute: typeof ApiPublicCeyoRoutinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/config-status': {
+      id: '/api/public/config-status'
+      path: '/api/public/config-status'
+      fullPath: '/api/public/config-status'
+      preLoaderRoute: typeof ApiPublicConfigStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/fx': {
+      id: '/api/public/fx'
+      path: '/api/public/fx'
+      fullPath: '/api/public/fx'
+      preLoaderRoute: typeof ApiPublicFxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/geo': {
+      id: '/api/public/geo'
+      path: '/api/public/geo'
+      fullPath: '/api/public/geo'
+      preLoaderRoute: typeof ApiPublicGeoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/kashier-webhook': {
+      id: '/api/public/kashier-webhook'
+      path: '/api/public/kashier-webhook'
+      fullPath: '/api/public/kashier-webhook'
+      preLoaderRoute: typeof ApiPublicKashierWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ref-visit': {
+      id: '/api/public/ref-visit'
+      path: '/api/public/ref-visit'
+      fullPath: '/api/public/ref-visit'
+      preLoaderRoute: typeof ApiPublicRefVisitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/reminders-tick': {
+      id: '/api/public/reminders-tick'
+      path: '/api/public/reminders-tick'
+      fullPath: '/api/public/reminders-tick'
+      preLoaderRoute: typeof ApiPublicRemindersTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram-keys': {
+      id: '/api/public/telegram-keys'
+      path: '/api/public/telegram-keys'
+      fullPath: '/api/public/telegram-keys'
+      preLoaderRoute: typeof ApiPublicTelegramKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telnyx-voice': {
+      id: '/api/public/telnyx-voice'
+      path: '/api/public/telnyx-voice'
+      fullPath: '/api/public/telnyx-voice'
+      preLoaderRoute: typeof ApiPublicTelnyxVoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/agent-tools/$token': {
+      id: '/api/public/agent-tools/$token'
+      path: '/api/public/agent-tools/$token'
+      fullPath: '/api/public/agent-tools/$token'
+      preLoaderRoute: typeof ApiPublicAgentToolsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/channels/telegram': {
+      id: '/api/public/channels/telegram'
+      path: '/api/public/channels/telegram'
+      fullPath: '/api/public/channels/telegram'
+      preLoaderRoute: typeof ApiPublicChannelsTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/channels/x-poll': {
+      id: '/api/public/channels/x-poll'
+      path: '/api/public/channels/x-poll'
+      fullPath: '/api/public/channels/x-poll'
+      preLoaderRoute: typeof ApiPublicChannelsXPollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/channels/xchat': {
+      id: '/api/public/channels/xchat'
+      path: '/api/public/channels/xchat'
+      fullPath: '/api/public/channels/xchat'
+      preLoaderRoute: typeof ApiPublicChannelsXchatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/media-status/$runId': {
+      id: '/api/public/media-status/$runId'
+      path: '/api/public/media-status/$runId'
+      fullPath: '/api/public/media-status/$runId'
+      preLoaderRoute: typeof ApiPublicMediaStatusRunIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/site/$siteId': {
+      id: '/api/public/site/$siteId'
+      path: '/api/public/site/$siteId'
+      fullPath: '/api/public/site/$siteId'
+      preLoaderRoute: typeof ApiPublicSiteSiteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/tg-bot/$docId': {
+      id: '/api/public/tg-bot/$docId'
+      path: '/api/public/tg-bot/$docId'
+      fullPath: '/api/public/tg-bot/$docId'
+      preLoaderRoute: typeof ApiPublicTgBotDocIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ceyo-hook/$routineId/$sig': {
+      id: '/api/public/ceyo-hook/$routineId/$sig'
+      path: '/api/public/ceyo-hook/$routineId/$sig'
+      fullPath: '/api/public/ceyo-hook/$routineId/$sig'
+      preLoaderRoute: typeof ApiPublicCeyoHookRoutineIdSigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/media/$runId/$index': {
+      id: '/api/public/media/$runId/$index'
+      path: '/api/public/media/$runId/$index'
+      fullPath: '/api/public/media/$runId/$index'
+      preLoaderRoute: typeof ApiPublicMediaRunIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
+  AboutRoute: AboutRoute,
+  ConnectedRoute: ConnectedRoute,
+  ContactRoute: ContactRoute,
+  CookiesRoute: CookiesRoute,
+  PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  SecurityRoute: SecurityRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SubscriptionTermsRoute: SubscriptionTermsRoute,
+  TermsRoute: TermsRoute,
+  ApiAnythingRoute: ApiAnythingRoute,
+  ApiBillingRoute: ApiBillingRoute,
+  ApiCallFollowupRoute: ApiCallFollowupRoute,
+  ApiCallVisionRoute: ApiCallVisionRoute,
+  ApiCeyoChatRoute: ApiCeyoChatRoute,
+  ApiCeyoTaskRoute: ApiCeyoTaskRoute,
+  ApiChatRoute: ApiChatRoute,
+  ApiClerkRoute: ApiClerkRoute,
+  ApiComputerAgentRoute: ApiComputerAgentRoute,
+  ApiDeepResearchRoute: ApiDeepResearchRoute,
+  ApiDevAdminRoute: ApiDevAdminRoute,
+  ApiDevAgentRoute: ApiDevAgentRoute,
+  ApiLongRunRoute: ApiLongRunRoute,
+  ApiManusAdminRoute: ApiManusAdminRoute,
+  ApiMarketNewsRoute: ApiMarketNewsRoute,
+  ApiMcpRoute: ApiMcpRoute,
+  ApiPeopleBotRoute: ApiPeopleBotRoute,
+  ApiPhoneRoute: ApiPhoneRoute,
+  ApiReadUrlRoute: ApiReadUrlRoute,
+  ApiRenderPdfRoute: ApiRenderPdfRoute,
+  ApiTradeableAssetsRoute: ApiTradeableAssetsRoute,
+  ApiTranscribeRoute: ApiTranscribeRoute,
+  ApiVideoCallRoute: ApiVideoCallRoute,
+  ApiVoiceRoute: ApiVoiceRoute,
+  ApiVoiceCallRoute: ApiVoiceCallRoute,
+  ApiVoiceTranscribeRoute: ApiVoiceTranscribeRoute,
+  ApiWalletRoute: ApiWalletRoute,
+  ApiWalletActionRoute: ApiWalletActionRoute,
+  ApiWebSearchRoute: ApiWebSearchRoute,
+  ArCountryRoute: ArCountryRoute,
+  AuthNativeReturnRoute: AuthNativeReturnRoute,
+  CompareToolRoute: CompareToolRoute,
+  CountriesSlugRoute: CountriesSlugRoute,
+  DeCountryRoute: DeCountryRoute,
+  EnCountryRoute: EnCountryRoute,
+  EsCountryRoute: EsCountryRoute,
+  FrCountryRoute: FrCountryRoute,
+  HiCountryRoute: HiCountryRoute,
+  PtCountryRoute: PtCountryRoute,
+  RuCountryRoute: RuCountryRoute,
+  TrCountryRoute: TrCountryRoute,
+  ZhCountryRoute: ZhCountryRoute,
+  ArIndexRoute: ArIndexRoute,
+  CompareIndexRoute: CompareIndexRoute,
+  CountriesIndexRoute: CountriesIndexRoute,
+  DeIndexRoute: DeIndexRoute,
+  EnIndexRoute: EnIndexRoute,
+  EsIndexRoute: EsIndexRoute,
+  FrIndexRoute: FrIndexRoute,
+  HiIndexRoute: HiIndexRoute,
+  PtIndexRoute: PtIndexRoute,
+  RuIndexRoute: RuIndexRoute,
+  TrIndexRoute: TrIndexRoute,
+  ZhIndexRoute: ZhIndexRoute,
+  ApiAgentSplatRoute: ApiAgentSplatRoute,
+  ApiPublicCeyoJobsRoute: ApiPublicCeyoJobsRoute,
+  ApiPublicCeyoRoutinesRoute: ApiPublicCeyoRoutinesRoute,
+  ApiPublicConfigStatusRoute: ApiPublicConfigStatusRoute,
+  ApiPublicFxRoute: ApiPublicFxRoute,
+  ApiPublicGeoRoute: ApiPublicGeoRoute,
+  ApiPublicKashierWebhookRoute: ApiPublicKashierWebhookRoute,
+  ApiPublicRefVisitRoute: ApiPublicRefVisitRoute,
+  ApiPublicRemindersTickRoute: ApiPublicRemindersTickRoute,
+  ApiPublicTelegramKeysRoute: ApiPublicTelegramKeysRoute,
+  ApiPublicTelnyxVoiceRoute: ApiPublicTelnyxVoiceRoute,
+  ApiPublicAgentToolsTokenRoute: ApiPublicAgentToolsTokenRoute,
+  ApiPublicChannelsTelegramRoute: ApiPublicChannelsTelegramRoute,
+  ApiPublicChannelsXPollRoute: ApiPublicChannelsXPollRoute,
+  ApiPublicChannelsXchatRoute: ApiPublicChannelsXchatRoute,
+  ApiPublicMediaStatusRunIdRoute: ApiPublicMediaStatusRunIdRoute,
+  ApiPublicSiteSiteIdRoute: ApiPublicSiteSiteIdRoute,
+  ApiPublicTgBotDocIdRoute: ApiPublicTgBotDocIdRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  ApiPublicCeyoHookRoutineIdSigRoute: ApiPublicCeyoHookRoutineIdSigRoute,
+  ApiPublicMediaRunIdIndexRoute: ApiPublicMediaRunIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
