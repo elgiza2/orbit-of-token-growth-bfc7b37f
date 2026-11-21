@@ -1,0 +1,1 @@
+- People-chat photos/files live in the private people-media bucket under <thread id>/ and are referenced from message text by src/lib/people/peopleMediaText.ts markers; members read them through short-lived signed links. Why: no public buckets, and access follows chat membership.
