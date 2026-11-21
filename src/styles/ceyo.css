@@ -850,3 +850,8 @@ html[data-theme="light"][data-ceyo-surface="bot"] .agent-hub{--hub-bg:oklch(0.98
 /* Swipe a message sideways to reply; vertical scrolling stays native. */
 .cx-row, .pp-row, .pp-msg { touch-action: pan-y; }
 .cx-row[data-swipe-ready="true"]::before { content: "↩"; position: absolute; inset-inline-start: -28px; top: 50%; transform: translateY(-50%); opacity: .7; font-size: 18px; }
+/* Compact "+" (attachments) button: smaller, softly rounded square instead of a big circle. */
+.cx-composer .cx-plus-wrap>.cx-circle,.cx-composer .cx-plus{width:30px;height:30px;margin-inline-start:2px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,.16);color:#d6d6d8;transition:background .15s,transform .12s}
+.cx-chat .cx-composer .cx-plus-wrap>.cx-circle,.cx-chat .cx-composer .cx-plus{width:30px;height:30px}
+.cx-composer .cx-plus-wrap>.cx-circle svg,.cx-composer .cx-plus svg{width:16px;height:16px;stroke-width:2.2}
+.cx-composer .cx-plus-wrap>.cx-circle:active,.cx-composer .cx-plus:active{transform:scale(.92);background:rgba(255,255,255,.08)}

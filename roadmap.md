@@ -1,13 +1,15 @@
 ## Owner's list (call, wallet, browser, groups, notifications) — 2026-11-21
-- [ ] Bot browser/computer runs on Browser Use / Browserbase without needing E2B (E2B kept for code/video).
-- [ ] Bots know they can use any Apify actor.
-- [ ] Wallet: TON deposits and NOT (jetton) count in the total balance.
-- [ ] Voice call button never hangs: timeout + instant cancel.
-- [ ] Bots accept passwords/private data the owner shares (private chat).
-- [ ] Groups: send photos and files; each bot answers independently and in parallel.
-- [ ] Remove in-app notifications; use system notifications (Android + web) like WhatsApp.
-- [ ] App icon readable on dark and light themes.
-- [ ] Chat "+" button smaller, softer corners.
+- [x] Bot browser/computer runs on Browser Use / Browserbase without needing E2B (E2B kept for code/video).
+- [x] Bots know they can use any Apify actor.
+- [x] Wallet: TON deposits and NOT (jetton) count in the total balance.
+- [x] Voice call button never hangs: timeout + instant cancel.
+- [x] Bots use passwords/private data the owner shares for that task (not repeated or saved elsewhere).
+- [x] Groups: send photos and files; each bot answers independently and in parallel.
+- [x] Remove in-app notifications; use system notifications (Android + web) like WhatsApp.
+- [x] App icon readable on dark and light themes.
+- [x] Chat "+" button smaller, softer corners.
+- [ ] Live checks still needed: real Browser Use/Browserbase session, real TON/NOT wallet, phone call on device, group upload signed in.
+- [ ] New APK so Android hides message notifications while the app is open (pushes already work with the current APK).
 - [ ] Deferred by owner: WhatsApp/Instagram-style chat redesign.
 
 ## Group speakers, Android splash, SEO — 2026-11-21
@@ -15,7 +17,7 @@
 - [x] Android ghost splash that stays until the app is ready (web part live after publish).
 - [ ] Build and upload a new APK so the native ghost launch screen reaches phones (owner).
 - [x] SEO: server-rendered home on landing hosts, one canonical host, sitemap, noindex for app screens, crawlable legal pages.
-- [ ] Owner to confirm main search domain (ceyo.app used for now).
+- [x] Main search domain: ceyo.si (ceyo.app redirects search engines there).
 - [ ] Deferred by owner: full app UX, page transitions and button animations.
 
 ## Provider switch — 2026-11-20

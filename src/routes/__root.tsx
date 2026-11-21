@@ -251,6 +251,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", sizes: "32x32", href: "/app-icon-32.png" },
       { rel: "icon", type: "image/png", sizes: "192x192", href: "/app-icon-192.png" },
       { rel: "icon", type: "image/png", sizes: "512x512", href: "/app-icon-512.png" },
+      // Tab icon follows the browser theme: plain ghost on dark tabs, outlined ghost on light tabs.
+      { rel: "icon", type: "image/png", sizes: "64x64", href: "/brand/ceyo-ghost-dark-64.png", media: "(prefers-color-scheme: dark)" },
+      { rel: "icon", type: "image/png", sizes: "64x64", href: "/brand/ceyo-ghost-light-64.png", media: "(prefers-color-scheme: light)" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/app-icon-180.png" },
       { rel: "manifest", href: "/site.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

@@ -1,0 +1,5 @@
+.brand-ghost { position: relative; display: inline-block; flex: none; }
+.brand-ghost img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; user-select: none; }
+.brand-ghost-light { display: none; }
+html[data-theme="light"] .brand-ghost-dark { display: none; }
+html[data-theme="light"] .brand-ghost-light { display: block; }

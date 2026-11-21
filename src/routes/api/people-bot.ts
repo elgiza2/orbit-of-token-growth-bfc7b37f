@@ -5,6 +5,7 @@ import { runAgentLoop } from "@/lib/ceyo/agentLoop.server";
 import { isUsageExhausted } from "@/lib/ceyo/usage";
 import { VISUAL_ANSWER_PROMPT } from "@/components/chat/visualAnswer";
 import { previewText } from "@/lib/ceyo/phonePush";
+import { describeAttachments } from "@/lib/people/peopleMediaText";
 
 const input = z.object({ threadId: z.string().uuid(), messageId: z.string().uuid() });
 const noStore = { "Cache-Control": "no-store" };
@@ -30,7 +31,7 @@ async function handle(request: Request) {
     const preview = previewText(text);
     return preview ? Promise.all(members.filter((m) => m.id !== except).map((m) => sendPhonePush(m.id, { kind: "message", id, botName: from, text: preview, path: "/" }))) : Promise.resolve([]);
   };
-  await notify(msg.id, sender, msg.content, auth.userId);
+  await notify(msg.id, sender, describeAttachments(msg.content), auth.userId);
 
   const bots = botsToAnswer(msg.content, (info?.bots || []) as { id: string; name: string }[]);
   if (!bots.length) return Response.json({ replied: 0 }, { headers: noStore });
@@ -40,7 +41,7 @@ async function handle(request: Request) {
   const nameOf = (m: { sender_id: string | null; bot_id: string | null }) => m.bot_id
     ? ((info?.bots || []) as { id: string; name: string }[]).find((b) => b.id === m.bot_id)?.name || "Bot"
     : personLabel(members, m.sender_id);
-  const lines = (recent || []).reverse().map((m) => `${nameOf(m)}: ${m.content}`);
+  const lines = (recent || []).reverse().map((m) => `${nameOf(m)}: ${describeAttachments(m.content)}`);
   const people = members.map((p) => `- ${personLabel(members, p.id)}`).join("\n");
 
   // Every bot answers the same message on its own and at the same time, so replies are independent and not copies of each other.
@@ -55,7 +56,7 @@ async function handle(request: Request) {
     try {
       text = (await runAgentLoop(visualSystem, [
         { role: "user", content: `Recent chat (context only):\n${lines.join("\n")}` },
-        { role: "user", content: `${sender} (latest message, reply to this person): ${msg.content}` },
+        { role: "user", content: `${sender} (latest message, reply to this person): ${describeAttachments(msg.content)}` },
       ], () => {}, request.signal, async () => [], { usageOwner: auth.userId, botId: full.owner_id === auth.userId ? full.id : null, maxSteps: 8 })).trim();
     } catch (error) {
       const message = error instanceof Error ? error.message : "";

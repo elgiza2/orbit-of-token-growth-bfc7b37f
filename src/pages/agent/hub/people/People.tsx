@@ -2,7 +2,8 @@ import { userErrorText } from "@/lib/errors";
 /** Person-to-person messaging inside the hub: username setup, chat list, new chat/group forms and the chat view. */
 import { readThread, writeThread } from "@/lib/people/threadCache";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check, MoreHorizontal, Trash2, Ban, Reply, Link2 } from "lucide-react";
+import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check, MoreHorizontal, Trash2, Ban, Reply, Link2, Plus, Paperclip, FileText } from "lucide-react";
+import { describeAttachments, parseAttachments, uploadPeopleFile, useAttachmentUrl, withAttachments, type PeopleAttachment } from "@/lib/people/peopleMedia";
 import { useSwipeReply } from "@/hooks/useSwipeReply";
 import { quoteFor, splitReply, withReply } from "@/lib/chat/replyQuote";
 import { askConfirm } from "@/components/common/CeyoConfirm";
@@ -89,7 +90,7 @@ export function PeopleSection({ lang, agents, active, onOpen }: { lang: HubLang;
             {t.kind === "group" ? <GroupRowAvatar label={title} portraits={groupBots[t.id]?.length
               ? groupBots[t.id].map((bot) => <BotAvatar key={bot.id} agent={agents.find((agent) => agent.id === bot.id) || botAgent(bot)} size={22} />)
               : t.members.map((person) => <PersonAvatar key={person.id} person={person} size={22} />)} /> : <PersonAvatar person={other} />}
-            <span className="hub-row-copy"><span className="hub-row-title"><strong>{title}</strong></span><span className="hub-row-preview">{t.last?.content || (t.kind === "group" ? [...(groupBots[t.id] || []).map((bot) => bot.name), ...t.members.map(personLabel)].join(" · ") : ar ? "ابدأ الكلام" : "Say hi")}</span></span>
+            <span className="hub-row-copy"><span className="hub-row-title"><strong>{title}</strong></span><span className="hub-row-preview">{(t.last?.content ? describeAttachments(splitReply(t.last.content).body) : "") || (t.kind === "group" ? [...(groupBots[t.id] || []).map((bot) => bot.name), ...t.members.map(personLabel)].join(" · ") : ar ? "ابدأ الكلام" : "Say hi")}</span></span>
           </button>
         </div>;
       })}
@@ -178,6 +179,9 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   const latestRef = useRef("");
   useEffect(() => { const last = messages[messages.length - 1]?.created_at; if (last) { latestRef.current = last; writeThread(threadId, messages); } }, [messages, threadId]);
   const textarea = useRef<HTMLTextAreaElement>(null);
+  const fileIn = useRef<HTMLInputElement>(null);
+  const [pending, setPending] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   const reloadInfo = () => peopleApi.info(threadId).then((i) => i && setInfo({ members: i.members || [], bots: i.bots || [] })).catch(() => {});
   useEffect(() => {
@@ -245,11 +249,15 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   const pickMention = (name: string) => { setText((t) => t.replace(/@([^\s@]*)$/, `@${name} `)); textarea.current?.focus(); };
 
   const send = async (followUp?: string) => {
-    const content = (followUp ?? text).trim();
-    if (!content) return;
+    const typed = (followUp ?? text).trim();
+    const picked = followUp ? [] : pending;
+    if ((!typed && !picked.length) || uploading) return;
     const quoted = followUp ? null : replyTo;
-    setText(""); setError(""); setReplyTo(null);
+    setText(""); setError(""); setReplyTo(null); if (picked.length) setPending([]);
     try {
+      let attached: PeopleAttachment[] = [];
+      if (picked.length) { setUploading(true); try { attached = await Promise.all(picked.map((f) => uploadPeopleFile(threadId, f))); } finally { setUploading(false); } }
+      const content = withAttachments(attached, typed);
       const m = await peopleApi.send(threadId, withReply(quoted ? splitReply(quoted.content).body : null, content));
       setMessages((cur) => cur.some((x) => x.id === m.id) ? cur : [...cur, m]);
       // The server notifies the other members' phones and lets the chat's bots answer.
@@ -261,7 +269,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
         // Pull replies in case the live update was missed.
         void peopleApi.messages(threadId).then((list) => setMessages((cur) => { const ids = new Set(list.map((x) => x.id)); return [...list, ...cur.filter((x) => !ids.has(x.id))]; })).catch(() => {});
       });
-    } catch (e) { setText(content); setReplyTo(quoted); setError(e instanceof Error ? e.message : "Not sent"); }
+    } catch (e) { setText(typed); setReplyTo(quoted); if (picked.length) setPending(picked); setError(e instanceof Error ? e.message : "Not sent"); }
   };
 
   const shownBots = botAgents.slice(0, 6);
@@ -339,7 +347,10 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       {replyTo && <div className="cx-reply-preview"><Reply size={15} /><span dir="auto">{quoteFor(splitReply(replyTo.content).body)}</span><button type="button" aria-label="Cancel reply" onClick={() => setReplyTo(null)}><X size={15} /></button></div>}
       {blocked && <p className="pp-muted pp-blocked" role="status">You blocked this person. Unblock from the menu to send messages.</p>}
       {mentionMatches.length > 0 && <div className="cx-mentions" role="listbox">{mentionMatches.map((b) => <button type="button" role="option" key={b.id} onPointerDown={(e) => { e.preventDefault(); pickMention(b.name); }}><BotAvatar agent={bots.get(b.id)?.agent || botAgent(b)} size={26} /><span>{b.name}</span></button>)}</div>}
+      {pending.length > 0 && <div className="cx-files">{pending.map((f, i) => <span key={`${f.name}-${i}`} className="cx-file-chip"><Paperclip size={13} /><span>{f.name}</span><button type="button" aria-label="Remove file" onClick={() => setPending((c) => c.filter((_, j) => j !== i))}><X size={13} /></button></span>)}</div>}
+      <input ref={fileIn} type="file" multiple hidden accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip" onChange={(e) => { const list = Array.from(e.target.files || []); e.target.value = ""; setPending((c) => [...c, ...list].slice(0, 10)); }} />
       <div className="cx-composer">
+        <button type="button" className="cx-circle cx-plus" aria-label={ar ? "إرسال صورة أو ملف" : "Send photo or file"} disabled={blocked || uploading} onClick={() => fileIn.current?.click()}><Plus size={17} /></button>
         <textarea
           ref={textarea}
           rows={1}
@@ -353,7 +364,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send(); }
           }}
         />
-        <button type="button" className="cx-circle cx-send" aria-label="Send" disabled={!text.trim() || blocked} onClick={() => void send()}><ArrowUp size={18} /></button>
+        <button type="button" className="cx-circle cx-send" aria-label="Send" disabled={(!text.trim() && !pending.length) || blocked || uploading} onClick={() => void send()}><ArrowUp size={18} /></button>
       </div>
     </div>
 
@@ -373,10 +384,22 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   </section>;
 }
 
-/** A message body with an optional quoted reply on top. */
+/** A message body with an optional quoted reply on top and any photos or files sent with it. */
 function ReplyBody({ content }: { content: string }) {
   const { quote, body } = splitReply(content);
-  return <>{quote && <span className="cx-reply-quote" dir="auto">{quote}</span>}<p style={{ whiteSpace: "pre-wrap", margin: 0 }}>{body}</p></>;
+  const { files, text } = parseAttachments(body);
+  return <>
+    {quote && <span className="cx-reply-quote" dir="auto">{quote}</span>}
+    {files.length > 0 && <span className="pp-attachments">{files.map((f) => <Attachment key={f.path} file={f} />)}</span>}
+    {text && <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>{text}</p>}
+  </>;
+}
+
+function Attachment({ file }: { file: PeopleAttachment }) {
+  const url = useAttachmentUrl(file.path);
+  if (file.type.startsWith("image/")) return <a className="pp-photo" href={url || undefined} target="_blank" rel="noopener noreferrer">{url ? <img src={url} alt={file.name} loading="lazy" /> : <span className="pp-photo-wait" />}</a>;
+  if (file.type.startsWith("video/")) return url ? <video className="pp-video" src={url} controls preload="metadata" /> : <span className="pp-photo-wait" />;
+  return <a className="pp-file" href={url || undefined} download={file.name} target="_blank" rel="noopener noreferrer"><FileText size={18} /><span dir="auto">{file.name}</span></a>;
 }
 
 const URL_RE = /https?:\/\/[^\s<>()]+/g;

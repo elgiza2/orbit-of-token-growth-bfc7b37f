@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ensureNotificationPermission, notifyJobComplete, showSystemNotification } from "@/lib/notifyJobComplete";
 import { claimNotification, markNotified } from "@/lib/notifications/dedupe";
 import { previewText } from "@/lib/ceyo/phonePush";
+import { describeAttachments } from "@/lib/people/peopleMediaText";
 import { hasPhoneAssistant, phoneLiveEnd, phoneReply } from "@/lib/native/assistantBridge";
 
 /**
@@ -192,7 +193,7 @@ export default function BackgroundJobNotifier() {
           .on("postgres_changes", { event: "INSERT", schema: "public", table: "people_messages" }, (payload) => {
             const row = payload.new as { id?: string; sender_id?: string | null; bot_id?: string | null; content?: string };
             if (!row?.id || row.sender_id === userId) return;
-            const text = previewText(row.content || "");
+            const text = previewText(describeAttachments(row.content || ""));
             if (!text) return;
             void (row.sender_id ? personName(row.sender_id) : botName(row.bot_id ?? null)).then((title) => showSystemNotification({ id: `pm:${row.id}`, title, body: text, onClickUrl: "/" }));
           })

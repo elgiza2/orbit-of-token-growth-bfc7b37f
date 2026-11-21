@@ -60,3 +60,10 @@
 .cx-reply-preview { display: flex; align-items: center; gap: 8px; margin: 0 12px 6px; padding: 8px 10px; border-radius: 14px; background: var(--hub-surface, #262628); color: var(--hub-muted, #9a9a9a); font-size: 13px; }
 .cx-reply-preview span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cx-reply-preview button { display: grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+/* Photos, videos and files sent in people chats */
+.pp-attachments { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+.pp-photo, .pp-photo-wait { display: block; width: 220px; max-width: 62vw; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 12px; background: var(--hub-surface, rgba(127,127,127,.15)); }
+.pp-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pp-video { width: 240px; max-width: 64vw; border-radius: 12px; display: block; }
+.pp-file { display: inline-flex; align-items: center; gap: 8px; max-width: 240px; padding: 8px 10px; border-radius: 12px; background: rgba(127,127,127,.16); color: inherit; text-decoration: none; font-size: 13.5px; }
+.pp-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

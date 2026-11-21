@@ -1,0 +1,1 @@
+ALTER FUNCTION public.people_media_allowed(text, boolean) SECURITY INVOKER;

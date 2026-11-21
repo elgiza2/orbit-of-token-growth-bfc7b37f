@@ -1,5 +1,6 @@
 /** White bottom payment box (summary → payment methods), matching the user's checkout screenshots. */
 import { useState, type ReactNode } from "react";
+import { BrandGhost } from "@/components/brand/BrandGhost";
 import { ArrowLeft, Check, ChevronRight, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BRAND_MARKS } from "@/lib/payments/brandMarks";
@@ -40,7 +41,7 @@ export function CheckoutBox({ name, subtitle, total, kashier, busy, error, onPay
   return (
     <div className="cbox" role="group" aria-label="Checkout">
       <div className="cbox-summary">
-        <img src="/app-icon-192.png" alt="" className="cbox-logo" />
+        <BrandGhost size={40} className="cbox-logo" />
         <div className="cbox-plan"><b>{name}</b><small>{subtitle}</small></div>
         <strong className="cbox-price">{total}</strong>
       </div>
