@@ -60,4 +60,4 @@
 - The signed-in person's name, username and photo come from profiles through src/lib/profile/myProfile.ts (owner-bound cache + change event); never read them from auth metadata for display. Why: one source so a changed photo or username shows everywhere at once.
 - Vault card/login/contact metadata syncs to owner-scoped vault_items so bots read it via read_vault; passwords stay device-only and cards keep only last four, holder, expiry and an AI-usage note (never full number or CVC). Why: bots can use the Vault without storing payment secrets.
 - Bot libraries filter agent_documents/agent_artifacts by bot_id (primary bot also shows legacy rows without one); tools that save files must pass the bot id. Why: each bot's profile shows only its own files.
-- Notifications are system-only (no in-app banners): web via showSystemNotification while unfocused, deduped; Android via server FCM, hidden while on screen. Why: WhatsApp-style, no duplicates.
+- Notifications are system-only: web while unfocused, Android via server FCM. Why: WhatsApp-style.
