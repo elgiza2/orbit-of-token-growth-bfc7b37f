@@ -2,7 +2,7 @@ import { userErrorText } from "@/lib/errors";
 /** Person-to-person messaging inside the hub: username setup, chat list, new chat/group forms and the chat view. */
 import { readThread, writeThread } from "@/lib/people/threadCache";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check, MoreHorizontal, Trash2, Ban, Reply, Link2, Plus, Paperclip, FileText } from "lucide-react";
+import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check, MoreHorizontal, Trash2, Ban, Reply, Link2, Plus, Paperclip, FileText, Copy, CheckCheck } from "lucide-react";
 import { describeAttachments, parseAttachments, uploadPeopleFile, useAttachmentUrl, withAttachments, type PeopleAttachment } from "@/lib/people/peopleMedia";
 import { useSwipeReply } from "@/hooks/useSwipeReply";
 import { quoteFor, splitReply, withReply } from "@/lib/chat/replyQuote";
@@ -10,7 +10,7 @@ import { askConfirm } from "@/components/common/CeyoConfirm";
 import { FormattedAnswer } from "@/components/chat/FormattedAnswer";
 import { supabase } from "@/integrations/supabase/client";
 import type { AgentInfo } from "@/lib/agentsky/client";
-import { peopleApi, personLabel, myUserId, USERNAME_RE, normalizeUsername, type PersonInfo, type PeopleMessage, type ThreadSummary, type ThreadBot } from "@/lib/people/peopleApi";
+import { peopleApi, personLabel, myUserId, USERNAME_RE, normalizeUsername, type PersonInfo, type PeopleMessage, type ThreadSummary, type ThreadBot, type PeopleReaction } from "@/lib/people/peopleApi";
 import { BotAvatar, GroupRowAvatar, type HubLang } from "../HubParts";
 import "@/styles/ceyo.css";
 import "@/styles/people.css";
@@ -84,13 +84,14 @@ export function PeopleSection({ lang, agents, active, onOpen }: { lang: HubLang;
       {threads.map((t) => {
         const other = t.kind === "direct" ? t.members.find((m) => m.id !== me) : null;
         const title = t.kind === "group" ? t.name || (ar ? "جروب" : "Group") : personLabel(other);
+        const draft = readDraft(t.id);
         const unread = !!t.last && t.last.senderId !== me && t.last.createdAt > t.lastReadAt;
         return <div className="hub-list-row" key={t.id}>
           <button type="button" className="hub-list-row-main" data-unread={unread} data-active={active === t.id} onClick={() => onOpen(t.id)}>
             {t.kind === "group" ? <GroupRowAvatar label={title} portraits={groupBots[t.id]?.length
               ? groupBots[t.id].map((bot) => <BotAvatar key={bot.id} agent={agents.find((agent) => agent.id === bot.id) || botAgent(bot)} size={22} />)
               : t.members.map((person) => <PersonAvatar key={person.id} person={person} size={22} />)} /> : <PersonAvatar person={other} />}
-            <span className="hub-row-copy"><span className="hub-row-title"><strong>{title}</strong></span><span className="hub-row-preview">{(t.last?.content ? describeAttachments(splitReply(t.last.content).body) : "") || (t.kind === "group" ? [...(groupBots[t.id] || []).map((bot) => bot.name), ...t.members.map(personLabel)].join(" · ") : ar ? "ابدأ الكلام" : "Say hi")}</span></span>
+            <span className="hub-row-copy"><span className="hub-row-title"><strong>{title}</strong></span><span className="hub-row-preview">{draft ? <><span className="pp-draft">Draft:</span> {draft}</> : (t.last?.content ? describeAttachments(splitReply(t.last.content).body) : "") || (t.kind === "group" ? [...(groupBots[t.id] || []).map((bot) => bot.name), ...t.members.map(personLabel)].join(" · ") : ar ? "ابدأ الكلام" : "Say hi")}</span></span>
           </button>
         </div>;
       })}
@@ -154,6 +155,11 @@ export function NewPeopleChat({ lang, mode, agents, onCancel, onOpened }: { lang
   </section>;
 }
 
+const DRAFT_KEY = (id: string) => `megsy_people_draft_${id}`;
+function readDraft(id: string) { try { return localStorage.getItem(DRAFT_KEY(id)) || ""; } catch { return ""; } }
+function writeDraft(id: string, v: string) { try { if (v.trim()) localStorage.setItem(DRAFT_KEY(id), v); else localStorage.removeItem(DRAFT_KEY(id)); } catch { /* storage blocked */ } }
+const QUICK_REACTIONS = ["❤️", "👍", "😂", "😮", "😢", "🙏"];
+
 function fmtTime(at?: string) {
   if (!at) return "";
   const d = new Date(at);
@@ -174,6 +180,9 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   const [replyTo, setReplyTo] = useState<PeopleMessage | null>(null);
   const [profile, setProfile] = useState<PersonInfo | null>(null);
   const [blocked, setBlocked] = useState(false);
+  const [readState, setReadState] = useState<Record<string, string>>({});
+  const [reactions, setReactions] = useState<PeopleReaction[]>([]);
+  const [actionFor, setActionFor] = useState<PeopleMessage | null>(null);
   const swipe = useSwipeReply<PeopleMessage>((m) => { setReplyTo(m); textarea.current?.focus(); });
   const scroller = useRef<HTMLDivElement>(null);
   const latestRef = useRef("");
@@ -194,6 +203,9 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
     if (cached.length) setMessages(cached);
     void peopleApi.messages(threadId).then((m) => { if (alive) { setMessages(m); writeThread(threadId, m); latestRef.current = m[m.length - 1]?.created_at || new Date(0).toISOString(); } }).catch((e) => setError(userErrorText(e)));
     void peopleApi.markRead(threadId);
+    setText(readDraft(threadId));
+    const loadMeta = () => { void peopleApi.readState(threadId).then((r) => alive && setReadState(r)); void peopleApi.reactions(threadId).then((r) => alive && setReactions(r)); };
+    loadMeta();
     const merge = (incoming: PeopleMessage[]) => {
       if (!alive || !incoming.length) return;
       setMessages((cur) => {
@@ -207,16 +219,19 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
     let live = false;
     const channel = supabase.channel(`people-thread-${threadId}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "people_messages", filter: `thread_id=eq.${threadId}` }, (p: any) => merge([p.new as PeopleMessage]))
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "people_thread_members", filter: `thread_id=eq.${threadId}` }, (p: any) => { const row = p.new as { user_id?: string; last_read_at?: string }; if (row?.user_id && row.last_read_at) setReadState((c) => ({ ...c, [row.user_id!]: row.last_read_at! })); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "people_reactions", filter: `thread_id=eq.${threadId}` }, () => { void peopleApi.reactions(threadId).then((r) => alive && setReactions(r)); })
       .subscribe((status) => { live = status === "SUBSCRIBED"; if (live) catchUp(); });
     // Live updates are the fast path; a light catch-up covers dropped sockets and sleeping tabs.
     const timer = window.setInterval(() => { if (!live) catchUp(); }, 2500);
-    const slow = window.setInterval(catchUp, 15000);
+    const slow = window.setInterval(() => { catchUp(); if (!document.hidden) loadMeta(); }, 15000);
     const onVisible = () => catchUp();
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onVisible);
     return () => { alive = false; window.clearInterval(timer); window.clearInterval(slow); document.removeEventListener("visibilitychange", onVisible); window.removeEventListener("focus", onVisible); void supabase.removeChannel(channel); };
   }, [threadId]);
   useEffect(() => { scroller.current?.scrollTo({ top: scroller.current.scrollHeight }); }, [messages.length, botsBusy]);
+  useEffect(() => { writeDraft(threadId, text); }, [text, threadId]);
   useEffect(() => {
     const el = textarea.current;
     if (!el) return;
@@ -248,8 +263,65 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   const mentionMatches = mentionQuery === undefined ? [] : info.bots.filter((b) => b.name.toLowerCase().includes(mentionQuery.toLowerCase())).slice(0, 6);
   const pickMention = (name: string) => { setText((t) => t.replace(/@([^\s@]*)$/, `@${name} `)); textarea.current?.focus(); };
 
+  const reactionsFor = useMemo(() => {
+    const map = new Map<string, PeopleReaction[]>();
+    for (const r of reactions) map.set(r.message_id, [...(map.get(r.message_id) || []), r]);
+    return map;
+  }, [reactions]);
+  const react = (m: PeopleMessage, emoji: string) => {
+    setActionFor(null);
+    const mine = reactions.find((r) => r.message_id === m.id && r.user_id === me);
+    const next = mine?.emoji === emoji ? null : emoji;
+    setReactions((cur) => [...cur.filter((r) => !(r.message_id === m.id && r.user_id === me)), ...(next ? [{ message_id: m.id, user_id: me, emoji: next }] : [])]);
+    void peopleApi.react(threadId, m.id, next).catch(() => { setError("Reactions aren't available yet"); void peopleApi.reactions(threadId).then(setReactions); });
+  };
+  // Who has read up to each of my messages: the last of my messages each member has seen.
+  const seenBy = useMemo(() => {
+    const out = new Map<string, PersonInfo[]>();
+    for (const [uid, at] of Object.entries(readState)) {
+      if (uid === me || !at) continue;
+      let last: PeopleMessage | undefined;
+      for (const m of messages) if (m.sender_id === me && m.created_at <= at) last = m;
+      const person = people.get(uid);
+      if (last && person) out.set(last.id, [...(out.get(last.id) || []), person]);
+    }
+    return out;
+  }, [readState, messages, me, people]);
+  const lastMine = useMemo(() => [...messages].reverse().find((m) => m.sender_id === me)?.id, [messages, me]);
+  const press = useRef<{ t: number; x: number; y: number } | null>(null);
+  const rowProps = (m: PeopleMessage) => {
+    const sw = swipe(m);
+    const clear = () => { if (press.current) window.clearTimeout(press.current.t); press.current = null; };
+    return {
+      ...sw,
+      onContextMenu: (e: React.MouseEvent) => { e.preventDefault(); clear(); setActionFor(m); },
+      onPointerDown: (e: React.PointerEvent<HTMLElement>) => { sw.onPointerDown(e); clear(); const x = e.clientX, y = e.clientY; press.current = { x, y, t: window.setTimeout(() => { press.current = null; if ("vibrate" in navigator) navigator.vibrate(12); setActionFor(m); }, 450) }; },
+      onPointerMove: (e: React.PointerEvent<HTMLElement>) => { sw.onPointerMove(e); if (press.current && Math.hypot(e.clientX - press.current.x, e.clientY - press.current.y) > 8) clear(); },
+      onPointerUp: () => { clear(); sw.onPointerUp(); },
+      onPointerCancel: () => { clear(); sw.onPointerCancel(); },
+    };
+  };
+  // Drag the whole conversation sideways to peek at every message's time.
+  const column = useRef<HTMLDivElement>(null);
+  const peek = useRef<{ x: number; y: number; on: boolean | null } | null>(null);
+  const peekProps = {
+    onPointerDown: (e: React.PointerEvent) => { if (e.pointerType !== "mouse") peek.current = { x: e.clientX, y: e.clientY, on: null }; },
+    onPointerMove: (e: React.PointerEvent) => {
+      const p = peek.current; const el = column.current; if (!p || !el) return;
+      const rtl = getComputedStyle(el).direction === "rtl";
+      const dx = (e.clientX - p.x) * (rtl ? 1 : -1); const dy = e.clientY - p.y;
+      if (p.on === null && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) p.on = dx > 0 && dx > Math.abs(dy) * 1.4;
+      if (!p.on) return;
+      const pull = Math.min(76, Math.max(0, dx));
+      el.style.transition = "none"; el.style.transform = `translateX(${rtl ? pull : -pull}px)`;
+    },
+    onPointerUp: () => { const el = column.current; if (el) { el.style.transition = ""; el.style.transform = ""; } peek.current = null; },
+    onPointerCancel: () => { const el = column.current; if (el) { el.style.transition = ""; el.style.transform = ""; } peek.current = null; },
+  };
+
   const send = async (followUp?: string) => {
     const typed = (followUp ?? text).trim();
+    if (!followUp) writeDraft(threadId, "");
     const picked = followUp ? [] : pending;
     if ((!typed && !picked.length) || uploading) return;
     const quoted = followUp ? null : replyTo;
@@ -285,7 +357,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       <button type="button" className="cx-circle cx-glass" aria-label={ar ? "رجوع" : "Back"} onClick={onBack}><ChevronLeft size={22} /></button>
       <button type="button" className="cx-title-pill cx-glass" disabled={!other} onClick={() => other && setProfile(other)} aria-label={other ? `Open ${title}'s profile` : undefined}>
         {headAvatars}
-        <strong dir="auto">{title}</strong>
+        <span className="pp-head-copy"><strong dir="auto">{title}</strong>{isGroup && <small dir="auto">{[...info.bots.map((b) => b.name), ...info.members.filter((p) => p.id !== me).map(personLabel), "You"].join(", ")}</small>}</span>
       </button>
       <div className="cx-head-actions">
         <button type="button" className="cx-circle cx-glass cx-head-menu" aria-label="Menu" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}><MoreHorizontal size={20} /></button>
@@ -302,11 +374,11 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
 
     {error && <div className="cx-toast" data-tone="error" role="alert"><span><strong>{userErrorText(error)}</strong></span></div>}
 
-    <div className="cx-scroll" ref={scroller}>
+    <div className="cx-scroll pp-scroll" ref={scroller} {...peekProps}>
       {!messages.length ? (
         <div className="cx-empty"><p className="pp-muted">{info.bots.length ? (ar ? "اكتب رسالتك وكل البوتات هترد" : "Send a message and every bot will reply") : ar ? "ابدأ الكلام" : "Say hi"}</p></div>
       ) : (
-        <div className="cx-column">
+        <div className="cx-column" ref={column}>
           {messages.map((m, i) => {
             const mine = m.sender_id === me;
             const hit = m.bot_id ? bots.get(m.bot_id) : undefined;
@@ -317,17 +389,19 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
             return <div key={m.id} className="cx-row-wrap">
               {showDay && <p className="cx-day">{new Date(m.created_at).toDateString() === new Date().toDateString() ? (ar ? "النهارده " : "Today ") : ""}{time}</p>}
               {mine ? (
-                <div className="cx-row cx-row-user" {...swipe(m)}>
-                  <div data-no-translate className="cx-bubble cx-bubble-user" dir="auto"><ReplyBody content={m.content} /></div>
+                <><div className="cx-row cx-row-user" {...rowProps(m)}>
+                  <div data-no-translate className="cx-bubble cx-bubble-user" dir="auto"><ReplyBody content={m.content} /><Reactions list={reactionsFor.get(m.id)} /></div>
                   <span className="cx-time">{time}</span>
                 </div>
+                <SeenLine people={seenBy.get(m.id)} group={isGroup} last={m.id === lastMine} /></>
               ) : (
-                <div className="cx-row cx-row-agent" {...swipe(m)}>
+                <div className="cx-row cx-row-agent" {...rowProps(m)}>
                   <div className="cx-avatar">{hit ? <BotAvatar agent={hit.agent} size={22} /> : <button type="button" className="pp-avatar-btn" aria-label={`Open ${personLabel(person)}'s profile`} onClick={() => person && setProfile(person)}><PersonAvatar person={person} size={22} /></button>}</div>
                   <div className="cx-agent-body">
                     {isGroup && <span className="cx-author" dir="auto">{hit ? hit.bot.name : personLabel(person)}</span>}
                     <div data-no-translate className="cx-bubble cx-bubble-agent" dir="auto">
                       {hit ? <FormattedAnswer text={m.content} onSend={(message) => { void send(message); }} /> : <ReplyBody content={m.content} />}
+                      <Reactions list={reactionsFor.get(m.id)} />
                     </div>
                   </div>
                   <span className="cx-time">{time}</span>
@@ -368,6 +442,18 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       </div>
     </div>
 
+    {actionFor && <>
+      <div className="cx-sheet-scrim pp-action-scrim" onPointerDown={() => setActionFor(null)} />
+      <div className="pp-actions" role="dialog" aria-label="Message actions">
+        <div className="pp-react-bar">{QUICK_REACTIONS.map((e) => <button type="button" key={e} data-on={reactions.some((r) => r.message_id === actionFor.id && r.user_id === me && r.emoji === e)} onClick={() => react(actionFor, e)}>{e}</button>)}</div>
+        <p className="pp-action-preview" dir="auto">{quoteFor(splitReply(actionFor.content).body)}</p>
+        <div className="pp-action-menu">
+          <button type="button" onClick={() => { setReplyTo(actionFor); setActionFor(null); textarea.current?.focus(); }}><Reply size={18} />Reply</button>
+          <button type="button" onClick={() => { void navigator.clipboard?.writeText(parseAttachments(splitReply(actionFor.content).body).text); setActionFor(null); }}><Copy size={18} />Copy</button>
+          <span className="pp-action-time">{new Date(actionFor.created_at).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}</span>
+        </div>
+      </div>
+    </>}
     {profile && <PersonProfileSheet person={profile} messages={messages} onClose={() => setProfile(null)} />}
     {panel && <>
       <div className="cx-sheet-scrim" onPointerDown={() => setPanel("")} />
@@ -382,6 +468,22 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       </div>
     </>}
   </section>;
+}
+
+function Reactions({ list }: { list?: PeopleReaction[] }) {
+  if (!list?.length) return null;
+  const counts = new Map<string, number>();
+  for (const r of list) counts.set(r.emoji, (counts.get(r.emoji) || 0) + 1);
+  return <span className="pp-reactions">{[...counts].map(([e, n]) => <span key={e}>{e}{n > 1 && <small>{n}</small>}</span>)}</span>;
+}
+
+/** Instagram-style "Seen" under my message: the reader's photo in direct chats, stacked readers in groups. */
+function SeenLine({ people, group, last }: { people?: PersonInfo[]; group: boolean; last: boolean }) {
+  if (!people?.length) return last ? <p className="pp-seen"><Check size={13} />Sent</p> : null;
+  return <p className="pp-seen" data-read="true">
+    {group ? <span className="cx-stack">{people.slice(0, 5).map((p) => <PersonAvatar key={p.id} person={p} size={16} />)}</span> : <PersonAvatar person={people[0]} size={16} />}
+    {group ? (people.length > 5 ? `Seen by ${people.length}` : "Seen") : <><CheckCheck size={13} />Seen</>}
+  </p>;
 }
 
 /** A message body with an optional quoted reply on top and any photos or files sent with it. */

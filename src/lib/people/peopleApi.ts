@@ -11,6 +11,8 @@ export type ThreadSummary = {
 };
 export type PeopleMessage = { id: string; thread_id: string; sender_id: string | null; bot_id: string | null; content: string; created_at: string };
 
+export type PeopleReaction = { message_id: string; user_id: string; emoji: string };
+
 export const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 export const normalizeUsername = (v: string) => v.trim().replace(/^@/, "").toLowerCase();
 
@@ -84,6 +86,22 @@ export const peopleApi = {
   markRead: async (threadId: string) => {
     const id = await myUserId();
     await db.from("people_thread_members").update({ last_read_at: new Date().toISOString() }).eq("thread_id", threadId).eq("user_id", id);
+  },
+  /** Each member's last read time; empty when the server has no read receipts yet. */
+  readState: async (threadId: string): Promise<Record<string, string>> => {
+    const r = await db.rpc("people_read_state", { p_thread: threadId });
+    if (r.error) return {};
+    return Object.fromEntries(((r.data as any[]) || []).map((x) => [x.user_id, x.last_read_at]));
+  },
+  reactions: async (threadId: string): Promise<PeopleReaction[]> => {
+    const r = await db.from("people_reactions").select("message_id,user_id,emoji").eq("thread_id", threadId);
+    return r.error ? [] : (r.data as PeopleReaction[]) || [];
+  },
+  /** Sets my reaction on a message; tapping the same emoji again removes it. */
+  react: async (threadId: string, messageId: string, emoji: string | null) => {
+    const me = await myUserId();
+    if (!emoji) { check(await db.from("people_reactions").delete().eq("message_id", messageId).eq("user_id", me)); return; }
+    check(await db.from("people_reactions").upsert({ message_id: messageId, thread_id: threadId, user_id: me, emoji }, { onConflict: "message_id,user_id" }));
   },
   /** Asks the server to let any @mentioned bot in this thread answer the message. */
   askBots: async (threadId: string, messageId: string) => {
