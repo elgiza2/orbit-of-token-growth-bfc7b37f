@@ -1133,6 +1133,38 @@ export type Database = {
           },
         ]
       }
+      people_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          message_id: string
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          message_id: string
+          thread_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          message_id?: string
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "people_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "people_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       people_thread_bots: {
         Row: {
           added_by: string
@@ -2298,6 +2330,13 @@ export type Database = {
       people_media_allowed: {
         Args: { _name: string; _send: boolean }
         Returns: boolean
+      }
+      people_read_state: {
+        Args: { p_thread: string }
+        Returns: {
+          last_read_at: string
+          user_id: string
+        }[]
       }
       people_thread_info: { Args: { p_thread: string }; Returns: Json }
       platform_touch_key_limits: { Args: { p_key_id: string }; Returns: Json }
