@@ -10,4 +10,4 @@
 
 - Android trial artifacts are selected through CEYO_ANDROID_TRY with a distinct package and build-generated label; google-services.json carries a separate Firebase client for each package. Why: test installs must coexist with production and still receive pushes.
 
-- The Android app ships only the notification reader, push and reminders; voice assistant, wake word and call screening are unregistered from the manifest. Why: owner chose a stable notifications-only phone app.
+- The Android app ships only the notification reader, push and reminders; voice assistant, wake word and call screening are unregistered from the manifest. Why: owner chose a stable notifications-only phone app.- Android launch: native SplashScreen holds the ghost until MegsyAndroid.appReady() (12 s cap); AndroidSplash mirrors it until firstScreen detects content. Why: one continuous loader instead of icon → second loader.

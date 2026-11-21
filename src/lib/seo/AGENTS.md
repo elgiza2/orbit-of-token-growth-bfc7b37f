@@ -1,0 +1,1 @@
+- Host-level SEO runs in src/lib/seo/hostRouting.server.ts from src/server.ts; canonical links come from canonicalOrigin/SEO_HOST in src/config/domains.ts. Why: one indexed host, crawlable landing "/" and no indexed app shells.
