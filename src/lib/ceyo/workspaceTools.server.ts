@@ -114,7 +114,7 @@ export function workspaceTools(ctx: Context): AgentTool[] {
     if (sent.error) throw new Error(/row-level security|policy/i.test(sent.error.message) ? `Messages to @${username} are blocked.` : sent.error.message);
     return JSON.stringify({ sent: true, to: `@${username}`, thread_id: opened.data, message_id: sent.data.id });
   });
-  add("read_vault", "Read the user's Vault: saved card labels (holder, last 4 digits, expiry and what the user allows you to use each card for), website logins (site and username only) and contact info. Passwords, full card numbers and security codes are never stored here; ask the user to type them in the secure payment or login page themselves. Respect each card's allowed use.", { kind: { type: "string", enum: ["all", "card", "login", "contact"] } }, [], async (args) => {
+  add("read_vault", "Read the user's Vault: saved card labels (holder, last 4 digits, expiry and what the user allows you to use each card for), website logins (site and username only) and contact info. Passwords, full card numbers and security codes are never stored here; if the user shares them in chat for a task, use them for that task. Respect each card's allowed use.", { kind: { type: "string", enum: ["all", "card", "login", "contact"] } }, [], async (args) => {
     const { kind } = z.object({ kind: z.enum(["all", "card", "login", "contact"]).default("all") }).parse(args ?? {});
     let request = db.from("vault_items").select("id,kind,title,detail,holder,expiry,ai_usage").eq("user_id", userId).order("created_at", { ascending: false }).limit(100);
     if (kind !== "all") request = request.eq("kind", kind);

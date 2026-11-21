@@ -4,12 +4,13 @@
  *  switches to another key automatically. Env vars are the last fallback. */
 import { createClient } from "@supabase/supabase-js";
 
-export type KeyProvider = "apify" | "cerebras" | "browserbase" | "composio" | "anam" | "cartesia" | "deepgram" | "telnyx" | "kashier_merchant_id" | "kashier_api_key" | "e2b" | "pexels" | "pixabay";
+export type KeyProvider = "apify" | "cerebras" | "browserbase" | "browser_use" | "composio" | "anam" | "cartesia" | "deepgram" | "telnyx" | "kashier_merchant_id" | "kashier_api_key" | "e2b" | "pexels" | "pixabay";
 
 const ENV: Record<KeyProvider, string> = {
   apify: "APIFY_API_KEY",
   cerebras: "CEREBRAS_API_KEY",
   browserbase: "BROWSERBASE_API_KEY",
+  browser_use: "BROWSER_USE_API_KEY",
   composio: "COMPOSIO_API_KEY",
   anam: "ANAM_API_KEY",
   cartesia: "CARTESIA_API_KEY",

@@ -1,3 +1,15 @@
+## Owner's list (call, wallet, browser, groups, notifications) — 2026-11-21
+- [ ] Bot browser/computer runs on Browser Use / Browserbase without needing E2B (E2B kept for code/video).
+- [ ] Bots know they can use any Apify actor.
+- [ ] Wallet: TON deposits and NOT (jetton) count in the total balance.
+- [ ] Voice call button never hangs: timeout + instant cancel.
+- [ ] Bots accept passwords/private data the owner shares (private chat).
+- [ ] Groups: send photos and files; each bot answers independently and in parallel.
+- [ ] Remove in-app notifications; use system notifications (Android + web) like WhatsApp.
+- [ ] App icon readable on dark and light themes.
+- [ ] Chat "+" button smaller, softer corners.
+- [ ] Deferred by owner: WhatsApp/Instagram-style chat redesign.
+
 ## Group speakers, Android splash, SEO — 2026-11-21
 - [x] Bots tell group members apart (bot teams, people chats, Telegram groups).
 - [x] Android ghost splash that stays until the app is ready (web part live after publish).

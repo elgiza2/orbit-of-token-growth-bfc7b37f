@@ -1,3 +1,5 @@
 - Promo/explainer videos use create_motion_video (Pillow glass frames piped to FFmpeg inside E2B) with narration from create_voiceover (Cartesia Sonic SSE with word timestamps, uploaded to the sandbox via writeFile); motion.py, motion.ts and the prompt workflow stay in sync. Why: Ceyo's signature style is deterministic and multilingual without video-generation models.
 - Code tools (grep_code, code_outline, git without push, export_project_zip) build bash from quoted data in codeTools.ts and stay inside /home/user. Why: inputs must never become shell code or reach host paths.
 - Browser sign-in and human checks return a browser_handoff widget with the active provider's live window; never expose the CDP URL. Why: the user handles their own login/checks.
+
+- Browser tools connect directly from Workers to Browser Use Cloud (primary) or Browserbase (standby) over CDP; never use E2B for browser control or handoff. Why: browser availability must not depend on sandbox keys or credit; retain per-owner/bot profiles and leases.

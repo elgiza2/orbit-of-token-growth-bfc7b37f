@@ -1,12 +1,11 @@
 import { getProviderKey, isKeyFailure, markProviderKeyFailed } from "@/lib/keys/providerKey";
 import { browserAction, publicBrowserUrl, browserSessionLifetime, canRetryBrowserRead } from "./browserRules";
-import type { Computer } from "./e2b.server";
-import { exportArtifact } from "./artifacts.server";
+import { directBrowser } from "./directBrowser.server";
 import { browserUse, browserUseCanFallback } from "./browserUse.server";
 
 const API = "https://api.browserbase.com/v1";
 type Session = { id: string; connectUrl: string; key: string; liveUrl: () => Promise<string>; stop: () => Promise<unknown> };
-export function createBotBrowser(userId: string, botId: string, computer: Computer) {
+export function createBotBrowser(userId: string, botId: string) {
   let session: Session | null = null;
   const token = crypto.randomUUID();
   let claimed = false;
@@ -28,9 +27,7 @@ export function createBotBrowser(userId: string, botId: string, computer: Comput
     const row = data?.[0];
     if (!row) throw new Error("This bot's browser is busy or awaiting your login; try again after it finishes");
     claimed = true;
-    const setup = await computer.run("%pip -q install playwright", "python", 120000);
-    if (!setup.ok) throw new Error("Could not prepare browser controls");
-    const primaryKey = process.env.BROWSER_USE_API_KEY?.trim();
+    const primaryKey = await getProviderKey("browser_use");
     if (primaryKey) {
       const provider = browserUse(primaryKey);
       try {
@@ -50,7 +47,7 @@ export function createBotBrowser(userId: string, botId: string, computer: Comput
       }
     }
     const key = await getProviderKey("browserbase");
-    if (!key) throw new Error("Browser is not configured");
+    if (!key) throw new Error("Browser unavailable: configure a Browser Use or Browserbase API key");
     let projectId = row.project_id || process.env.BROWSERBASE_PROJECT_ID;
     if (!projectId) {
       const projects = await api(key, "/projects");
@@ -82,33 +79,30 @@ export function createBotBrowser(userId: string, botId: string, computer: Comput
       if (input.action === "click_at" && (input.x === undefined || input.y === undefined)) throw new Error("Use x/y from the last look");
       if (["click", "fill", "press"].includes(input.action) && !input.selector) throw new Error("Use a selector from the last page observation");
       const current = await open();
-      const payload = JSON.stringify({ ...input, connect: current.connectUrl });
-      // Provider credentials are passed only to the isolated computer, never emitted in chat.
-      const execute = () => computer.run(`import json\nfrom playwright.async_api import async_playwright\na=json.loads(${JSON.stringify(payload)})\nasync with async_playwright() as p:\n b=await p.chromium.connect_over_cdp(a['connect'])\n c=b.contexts[0]\n page=c.pages[0] if c.pages else await c.new_page()\n if a['action'] in ['navigate','login']: await page.goto(a['url'], wait_until='domcontentloaded', timeout=30000)\n elif a['action']=='click': await page.locator(a['selector']).first.click(timeout=10000)\n elif a['action']=='fill': await page.locator(a['selector']).first.fill(a.get('value',''),timeout=10000)\n elif a['action']=='press': await page.locator(a['selector']).first.press(a.get('value','Enter'),timeout=10000)\n elif a['action']=='click_at': await page.mouse.click(a['x'],a['y'])\n elif a['action']=='type_text': await page.keyboard.type(a.get('value',''),delay=40)\n if a['action'] in ['click_at','type_text']: await page.wait_for_timeout(1200)\n if a['action']=='show_user':\n  await page.wait_for_timeout(2500)\n  await page.screenshot(path='/home/user/screen.png')\n  print(json.dumps({'url':page.url,'saved':True}))\n  await b.close()\n  raise SystemExit\n if a['action']=='look':\n  import base64\n  await page.set_viewport_size({'width':1280,'height':800})\n  shot=await page.screenshot(type='jpeg',quality=60)\n  print(json.dumps({'url':page.url,'shot':base64.b64encode(shot).decode()}))\n  await b.close()\n  raise SystemExit\n print(json.dumps({'url':page.url,'text':(await page.locator('body').inner_text())[:12000],'controls':await page.locator('input,button,a,textarea,select').evaluate_all("els => els.slice(0,80).map(e => ({tag:e.tagName,id:e.id,name:e.name,type:e.type,text:(e.innerText||e.getAttribute('aria-label')||'').slice(0,100)}))")},ensure_ascii=False))\n await b.close()`, "python", 60000);
-      let result = await execute();
-      if (!result.ok && canRetryBrowserRead(input.action, result.output)) result = await execute();
-      if (!result.ok) {
-        // Give the agent the real cause (timeout, missing selector…) so it can adapt; strip provider URLs/keys.
-        const cause = result.output.split(current.key).join("***").replace(/wss?:\/\/\S+/g, "<browser>").trim().split("\n").filter(Boolean).slice(-4).join(" | ").slice(0, 600);
-        throw new Error(`Browser action failed: ${cause || "unknown error"}. Observe again before repeating any write action.`);
+      const execute = () => directBrowser(current.connectUrl, input);
+      let result;
+      try {
+        try { result = await execute(); }
+        catch (error) {
+          if (!canRetryBrowserRead(input.action, String(error))) throw error;
+          result = await execute();
+        }
+      } catch (error) {
+        const cause = String(error).split(current.key).join("***").replace(/(?:wss?|https?):\/\/\S+/g, "<browser>").slice(0, 600);
+        throw new Error(`Browser action failed: ${cause}. Observe again before repeating any write action.`);
       }
       if (input.action === "look") {
-        const shot = JSON.parse(result.output.trim().split("\n").pop() || "{}") as { url?: string; shot?: string };
+        const shot = result;
         if (!shot.shot) throw new Error("Could not capture the page");
         return JSON.stringify({ url: shot.url, view: await describeScreen(shot.shot, input.question) });
       }
-      if (input.action === "show_user") {
-        // Shows the user the live screen (e.g. WhatsApp/Telegram Web QR) so they scan it with their own phone.
-        const card = JSON.parse(await exportArtifact(computer, userId, { path: "/home/user/screen.png", name: "screen.png", mime: "image/png" }, botId));
-        return JSON.stringify({ ...card, instruction: "Screenshot is shown to the user. If it is a login QR, tell them to scan it from their phone app (WhatsApp: Linked devices; Telegram: Settings > Devices) within a minute, then reply 'done'. Then STOP and wait; afterwards use look to confirm sign-in." });
-      }
-      if (input.action === "login") {
+      if (input.action === "login" || input.action === "show_user") {
         const liveUrl = await current.liveUrl();
         if (typeof liveUrl !== "string" || !liveUrl.startsWith("https://")) throw new Error("Browser sign-in view unavailable");
         handoff = true;
         return JSON.stringify({ type: "ceyo.widget", widget: "browser_handoff", handoff: "ceyo.browser_login", data: { url: liveUrl, site: input.url, reason: input.question }, url: liveUrl, instruction: "A live browser card with an I'm done button is shown to this user. They sign in or solve the check themselves. Stop and wait; never ask for their password or bypass verification. Context is saved when session ends (up to 10 minutes)." });
       }
-      return result.output;
+      return JSON.stringify(result);
     },
     async close() {
       if (handoff || uncertain) return; // provider timeout persists context; lease expires safely
