@@ -2295,6 +2295,10 @@ export type Database = {
         }
       }
       open_direct_thread: { Args: { p_username: string }; Returns: string }
+      people_media_allowed: {
+        Args: { _name: string; _send: boolean }
+        Returns: boolean
+      }
       people_thread_info: { Args: { p_thread: string }; Returns: Json }
       platform_touch_key_limits: { Args: { p_key_id: string }; Returns: Json }
       platform_user_entitlement: { Args: { p_user_id: string }; Returns: Json }
