@@ -6,7 +6,7 @@ describe("landing host routing", () => {
     const res = await landingHostResponse(new Request("https://ceyo.si/"));
     expect(res?.status).toBe(200);
     const html = await res!.text();
-    expect(html).toContain('<link rel="canonical" href="https://ceyo.app/">');
+    expect(html).toContain('<link rel="canonical" href="https://ceyo.si/">');
   });
   it("sends app screens on the landing to the web app", async () => {
     const res = await landingHostResponse(new Request("https://ceyo.app/settings?a=1"));

@@ -20,8 +20,8 @@ describe("domain split", () => {
 
 import { canonicalOrigin, robotsTagFor } from "./domains";
 describe("search engine addresses", () => {
-  it("every production host points search engines at ceyo.app", () => {
-    expect(["ceyo.si", "matra.ceyo.app", "web.ceyo.si"].map((h) => canonicalOrigin(h, `https://${h}`))).toEqual(["https://ceyo.app", "https://ceyo.app", "https://ceyo.app"]);
+  it("every production host points search engines at ceyo.si", () => {
+    expect(["ceyo.app", "matra.ceyo.app", "web.ceyo.si"].map((h) => canonicalOrigin(h, `https://${h}`))).toEqual(["https://ceyo.si", "https://ceyo.si", "https://ceyo.si"]);
   });
   it("previews keep their own address", () => expect(canonicalOrigin("localhost:8080", "http://localhost:8080")).toBe("http://localhost:8080"));
   it("the Android app is never indexed", () => expect(robotsTagFor("app.ceyo.si", "/pricing")).toBe("noindex, nofollow"));

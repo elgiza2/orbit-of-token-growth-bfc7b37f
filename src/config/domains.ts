@@ -56,7 +56,7 @@ export function webAppOrigin(host: string, currentOrigin: string): string {
 
 /** The one address search engines should index. Every production host points its canonical links here,
  *  so ceyo.si, ceyo.app, marketer subdomains and web.ceyo.si never compete as duplicate copies. */
-export const SEO_HOST = "ceyo.app";
+export const SEO_HOST = "ceyo.si";
 
 /** Origin for canonical/hreflang/sitemap links: the SEO host on production, the current origin on previews. */
 export function canonicalOrigin(host: string, requestOrigin: string): string {
