@@ -1725,6 +1725,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string | null
+          group_invites: string
           id: string
           language: string
           onboarding_completed: boolean
@@ -1740,6 +1741,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          group_invites?: string
           id: string
           language?: string
           onboarding_completed?: boolean
@@ -1755,6 +1757,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          group_invites?: string
           id?: string
           language?: string
           onboarding_completed?: boolean
@@ -2161,6 +2164,10 @@ export type Database = {
           p_tier: string
           p_user: string
         }
+        Returns: boolean
+      }
+      can_add_to_group: {
+        Args: { p_adder: string; p_target: string }
         Returns: boolean
       }
       can_send_people: { Args: { _thread: string }; Returns: boolean }
