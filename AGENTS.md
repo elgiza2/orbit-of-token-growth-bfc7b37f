@@ -9,6 +9,8 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
+- People-group invitations, message mutations and unread-state rules live in src/lib/people/AGENTS.md; keep database ownership checks and versioned tombstone merges. Why: preserve consent and cross-user isolation.
+
 - The signed-in `/` and `/index` render the AgentHub bot/group home while `/chat` preserves the full primary-agent workspace. Groups and their coordinator/member relationships persist through owner-scoped database access; browser metadata is reserved for local preferences. Why: groups created by bots and users share one source of truth.
 - Chat sends render optimistic user events and reconcile them by persisted message ID; history refreshes retain unconfirmed user events, and new-chat creation bridges its first message until history arrives. Why: prevent sent-message flicker during asynchronous saves and session creation.
 - Integration operations use verified user-owned Composio accounts and single-claim approval requests; background jobs deliver idempotently through persisted jobs/messages. Why: prevent cross-account actions, duplicate execution and lost results.

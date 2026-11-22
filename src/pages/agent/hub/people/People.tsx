@@ -202,6 +202,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   const [editText, setEditText] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
   const [firstUnread, setFirstUnread] = useState<string | null>(null);
+  const [historyReady, setHistoryReady] = useState(false);
   const initialPositioned = useRef(false);
   const followBottom = useRef(true);
   const markedThrough = useRef("");
@@ -234,7 +235,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
     void myUserId().then((id) => alive && setMe(id)).catch(() => {});
     void peopleApi.thread(threadId).then((t) => alive && setThread(t)).catch(() => {});
     void reloadInfo();
-    latestRef.current = ""; initialPositioned.current = false; markedThrough.current = ""; setFirstUnread(null);
+    latestRef.current = ""; initialPositioned.current = false; markedThrough.current = ""; setFirstUnread(null); setHistoryReady(false);
     const cached = readThread<PeopleMessage>(threadId);
     if (cached.length) setMessages(cached);
     void Promise.all([myUserId(), peopleApi.myReadMarker(threadId)]).then(async ([userId, marker]) => {
@@ -242,7 +243,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       if (!alive) return;
       const unread = firstUnreadMessage(m, userId, marker);
       setFirstUnread(unread); followBottom.current = !unread;
-      setMessages(m); writeThread(threadId, m); latestRef.current = m[m.length - 1]?.created_at || "";
+      setMessages((current) => mergeMessages(current, m)); writeThread(threadId, m); latestRef.current = m[m.length - 1]?.created_at || ""; setHistoryReady(true);
     }).catch((e) => alive && setError(userErrorText(e)));
     setText(readDraft(threadId));
     const loadMeta = () => { void peopleApi.readState(threadId).then((r) => alive && setReadState(r)); void peopleApi.reactions(threadId).then((r) => alive && setReactions(r)); };
@@ -270,14 +271,14 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   }, [threadId]);
   useEffect(() => {
     const el = scroller.current;
-    if (!el || !messages.length || !latestRef.current) return;
+    if (!el || !historyReady || !messages.length || !latestRef.current) return;
     if (!initialPositioned.current) {
       initialPositioned.current = true;
       if (firstUnread) el.querySelector("[data-first-unread]")?.scrollIntoView({ block: "start" });
       else el.scrollTop = el.scrollHeight;
     } else if (followBottom.current) el.scrollTop = el.scrollHeight;
     markVisibleRead();
-  }, [messages, firstUnread, botsBusy]);
+  }, [messages, firstUnread, botsBusy, historyReady]);
   useEffect(() => { writeDraft(threadId, text); }, [text, threadId]);
   useEffect(() => {
     const el = textarea.current;
@@ -379,7 +380,8 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       if (picked.length) { setUploading(true); try { attached = await Promise.all(picked.map((f) => uploadPeopleFile(threadId, f))); } finally { setUploading(false); } }
       const content = withAttachments(attached, typed);
       const m = await peopleApi.send(threadId, withReply(quoted ? splitReply(quoted.content).body : null, content));
-      setMessages((cur) => cur.some((x) => x.id === m.id) ? cur : [...cur, m]);
+      followBottom.current = true;
+      setMessages((cur) => mergeMessages(cur, [m]));
       // The server notifies the other members' phones and lets the chat's bots answer.
       const hasBots = info.bots.length > 0;
       if (hasBots) setBotsBusy((n) => n + 1);
@@ -387,7 +389,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
         if (!hasBots) return;
         setBotsBusy((n) => Math.max(0, n - 1));
         // Pull replies in case the live update was missed.
-        void peopleApi.messages(threadId).then((list) => setMessages((cur) => { const ids = new Set(list.map((x) => x.id)); return [...list, ...cur.filter((x) => !ids.has(x.id))]; })).catch(() => {});
+        void peopleApi.messages(threadId).then((list) => setMessages((cur) => mergeMessages(cur, list))).catch(() => {});
       });
     } catch (e) { setText(typed); setReplyTo(quoted); if (picked.length) setPending(picked); setError(e instanceof Error ? e.message : "Not sent"); }
   };

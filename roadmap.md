@@ -1,8 +1,9 @@
 ## People chat additions — 2026-11-22
-- [ ] Group information: photo, name, description and members.
-- [ ] Owner-controlled invitation link and QR with explicit join confirmation.
-- [ ] Edit own messages and delete own messages for everyone with live sync.
-- [ ] Exact unread counts and first-unread separator.
+- [x] Group information: photo, name, description and members.
+- [x] Owner-controlled invitation link and QR with explicit join confirmation.
+- [x] Edit own messages and delete own messages for everyone with live sync.
+- [x] Exact unread counts and first-unread separator.
+- [ ] Signed-in two-person end-to-end check: external Supabase has no injectable browser session; database regression tests passed, isolated UI checks do not replace this check.
 
 ## Owner's list (call, wallet, browser, groups, notifications) — 2026-11-21
 - [x] Bot browser/computer runs on Browser Use / Browserbase without needing E2B (E2B kept for code/video).
