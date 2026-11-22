@@ -1,3 +1,9 @@
+## People chat additions — 2026-11-22
+- [ ] Group information: photo, name, description and members.
+- [ ] Owner-controlled invitation link and QR with explicit join confirmation.
+- [ ] Edit own messages and delete own messages for everyone with live sync.
+- [ ] Exact unread counts and first-unread separator.
+
 ## Owner's list (call, wallet, browser, groups, notifications) — 2026-11-21
 - [x] Bot browser/computer runs on Browser Use / Browserbase without needing E2B (E2B kept for code/video).
 - [x] Bots know they can use any Apify actor.
