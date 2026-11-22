@@ -1,0 +1,25 @@
+CREATE SCHEMA IF NOT EXISTS people_private;
+REVOKE ALL ON SCHEMA people_private FROM PUBLIC,anon;
+GRANT USAGE ON SCHEMA people_private TO authenticated,service_role;
+ALTER FUNCTION public.update_people_group(uuid,text,text,text) SET SCHEMA people_private;
+ALTER FUNCTION public.people_group_invite(uuid,boolean) SET SCHEMA people_private;
+ALTER FUNCTION public.preview_people_invite(uuid) SET SCHEMA people_private;
+ALTER FUNCTION public.join_people_invite(uuid) SET SCHEMA people_private;
+ALTER FUNCTION public.edit_people_message(uuid,text,boolean) SET SCHEMA people_private;
+ALTER FUNCTION public.people_unread_counts() SECURITY INVOKER;
+CREATE OR REPLACE FUNCTION people_private.edit_people_message(p_message uuid,p_content text,p_delete boolean DEFAULT false) RETURNS public.people_messages LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE result public.people_messages; BEGIN
+SELECT * INTO result FROM public.people_messages WHERE id=p_message FOR UPDATE;
+IF auth.uid() IS NULL OR result.id IS NULL OR result.sender_id IS DISTINCT FROM auth.uid() OR NOT public.is_people_member(result.thread_id) THEN RAISE EXCEPTION 'You can only change your own messages'; END IF;
+IF result.deleted_at IS NOT NULL THEN RAISE EXCEPTION 'This message has been deleted'; END IF;
+IF p_delete IS NULL OR (NOT p_delete AND length(trim(coalesce(p_content,''))) NOT BETWEEN 1 AND 8000) THEN RAISE EXCEPTION 'Message must contain 1 to 8000 characters'; END IF;
+UPDATE public.people_messages SET content=CASE WHEN p_delete THEN '' ELSE p_content END,edited_at=CASE WHEN p_delete THEN edited_at ELSE now() END,deleted_at=CASE WHEN p_delete THEN now() ELSE NULL END WHERE id=p_message RETURNING * INTO result; RETURN result;
+END $$;
+CREATE FUNCTION public.update_people_group(p_thread uuid,p_name text,p_description text,p_avatar text) RETURNS void LANGUAGE sql SECURITY INVOKER SET search_path=public AS $$ SELECT people_private.update_people_group(p_thread,p_name,p_description,p_avatar) $$;
+CREATE FUNCTION public.people_group_invite(p_thread uuid,p_reset boolean DEFAULT false) RETURNS uuid LANGUAGE sql SECURITY INVOKER SET search_path=public AS $$ SELECT people_private.people_group_invite(p_thread,p_reset) $$;
+CREATE FUNCTION public.preview_people_invite(p_token uuid) RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET search_path=public AS $$ SELECT people_private.preview_people_invite(p_token) $$;
+CREATE FUNCTION public.join_people_invite(p_token uuid) RETURNS uuid LANGUAGE sql SECURITY INVOKER SET search_path=public AS $$ SELECT people_private.join_people_invite(p_token) $$;
+CREATE FUNCTION public.edit_people_message(p_message uuid,p_content text,p_delete boolean DEFAULT false) RETURNS public.people_messages LANGUAGE sql SECURITY INVOKER SET search_path=public AS $$ SELECT people_private.edit_people_message(p_message,p_content,p_delete) $$;
+REVOKE ALL ON FUNCTION public.update_people_group(uuid,text,text,text),public.people_group_invite(uuid,boolean),public.preview_people_invite(uuid),public.join_people_invite(uuid),public.edit_people_message(uuid,text,boolean) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.update_people_group(uuid,text,text,text),public.people_group_invite(uuid,boolean),public.preview_people_invite(uuid),public.join_people_invite(uuid),public.edit_people_message(uuid,text,boolean) TO authenticated,service_role;
+REVOKE ALL ON FUNCTION people_private.edit_people_message(uuid,text,boolean) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION people_private.edit_people_message(uuid,text,boolean) TO authenticated,service_role;
