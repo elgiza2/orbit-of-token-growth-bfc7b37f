@@ -1,8 +1,11 @@
 import { userErrorText } from "@/lib/errors";
 /** Person-to-person messaging inside the hub: username setup, chat list, new chat/group forms and the chat view. */
+import { Button } from "@/components/ui/button";
+import { GroupDetails, PendingGroupInvitation } from "./GroupDetails";
+import { canChangeMessage, firstUnreadMessage, mergeMessages } from "@/lib/people/messageState";
 import { readThread, writeThread } from "@/lib/people/threadCache";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check, MoreHorizontal, Trash2, Ban, Reply, Link2, Plus, Paperclip, FileText, Copy, CheckCheck } from "lucide-react";
+import { ArrowUp, ChevronLeft, LogOut, UserPlus, Bot, X, AtSign, Check, MoreHorizontal, Trash2, Ban, Reply, Link2, Plus, Paperclip, FileText, Copy, CheckCheck, Pencil, Info } from "lucide-react";
 import { describeAttachments, parseAttachments, uploadPeopleFile, useAttachmentUrl, withAttachments, type PeopleAttachment } from "@/lib/people/peopleMedia";
 import { useSwipeReply } from "@/hooks/useSwipeReply";
 import { quoteFor, splitReply, withReply } from "@/lib/chat/replyQuote";
@@ -10,7 +13,7 @@ import { askConfirm } from "@/components/common/CeyoConfirm";
 import { FormattedAnswer } from "@/components/chat/FormattedAnswer";
 import { supabase } from "@/integrations/supabase/client";
 import type { AgentInfo } from "@/lib/agentsky/client";
-import { peopleApi, personLabel, myUserId, USERNAME_RE, normalizeUsername, type PersonInfo, type PeopleMessage, type ThreadSummary, type ThreadBot, type PeopleReaction } from "@/lib/people/peopleApi";
+import { peopleApi, personLabel, myUserId, USERNAME_RE, normalizeUsername, type PersonInfo, type PeopleMessage, type ThreadSummary, type ThreadBot, type PeopleReaction, type PeopleThread } from "@/lib/people/peopleApi";
 import { BotAvatar, GroupRowAvatar, type HubLang } from "../HubParts";
 import "@/styles/ceyo.css";
 import "@/styles/people.css";
@@ -71,32 +74,34 @@ export function PeopleSection({ lang, agents, active, onOpen }: { lang: HubLang;
     void myUserId().then((id) => {
       if (!alive) return; setMe(id); void load();
       channel = supabase.channel(`people-list-${Math.random().toString(36).slice(2)}`)
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "people_messages" }, () => void load()).subscribe();
+        .on("postgres_changes", { event: "*", schema: "public", table: "people_messages" }, () => void load())
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "people_thread_members", filter: `user_id=eq.${id}` }, () => void load())
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "people_threads" }, () => void load()).subscribe();
     }).catch(() => {});
     const onChange = () => void load();
     window.addEventListener("ceyo-people-changed", onChange);
     return () => { alive = false; window.removeEventListener("ceyo-people-changed", onChange); if (channel) void supabase.removeChannel(channel); };
   }, []);
-  if (!threads.length) return null;
-  return <section className="hub-category pp-section">
+  return <><PendingGroupInvitation onJoined={onOpen} />{threads.length > 0 && <section className="hub-category pp-section">
     <div className="hub-category-title"><span>{ar ? "الناس" : "People"}</span></div>
     <div className="hub-category-rows">
       {threads.map((t) => {
         const other = t.kind === "direct" ? t.members.find((m) => m.id !== me) : null;
         const title = t.kind === "group" ? t.name || (ar ? "جروب" : "Group") : personLabel(other);
         const draft = readDraft(t.id);
-        const unread = !!t.last && t.last.senderId !== me && t.last.createdAt > t.lastReadAt;
+        const unread = t.unreadCount > 0;
         return <div className="hub-list-row" key={t.id}>
           <button type="button" className="hub-list-row-main" data-unread={unread} data-active={active === t.id} onClick={() => onOpen(t.id)}>
             {t.kind === "group" ? <GroupRowAvatar label={title} portraits={groupBots[t.id]?.length
               ? groupBots[t.id].map((bot) => <BotAvatar key={bot.id} agent={agents.find((agent) => agent.id === bot.id) || botAgent(bot)} size={22} />)
               : t.members.map((person) => <PersonAvatar key={person.id} person={person} size={22} />)} /> : <PersonAvatar person={other} />}
             <span className="hub-row-copy"><span className="hub-row-title"><strong>{title}</strong></span><span className="hub-row-preview">{draft ? <><span className="pp-draft">Draft:</span> {draft}</> : (t.last?.content ? describeAttachments(splitReply(t.last.content).body) : "") || (t.kind === "group" ? [...(groupBots[t.id] || []).map((bot) => bot.name), ...t.members.map(personLabel)].join(" · ") : ar ? "ابدأ الكلام" : "Say hi")}</span></span>
+            {unread && <span className="pp-unread-badge" aria-label={`${t.unreadCount} unread messages`}>{t.unreadCount > 999 ? "999+" : t.unreadCount}</span>}
           </button>
         </div>;
       })}
     </div>
-  </section>;
+  </section>}</>;
 }
 
 function PeoplePicker({ lang, picked, onPick }: { lang: HubLang; picked: PersonInfo[]; onPick: (p: PersonInfo) => void }) {
@@ -185,13 +190,21 @@ function fmtTime(at?: string) {
 export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; threadId: string; agents: AgentInfo[]; onBack: () => void }) {
   const ar = false;
   const [me, setMe] = useState("");
-  const [thread, setThread] = useState<{ kind: "direct" | "group"; name: string | null } | null>(null);
+  const [thread, setThread] = useState<PeopleThread | null>(null);
   const [info, setInfo] = useState<{ members: PersonInfo[]; bots: ThreadBot[] }>({ members: [], bots: [] });
   const [messages, setMessages] = useState<PeopleMessage[]>([]);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
   const [panel, setPanel] = useState<"" | "people" | "bots">("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [groupDetails, setGroupDetails] = useState(false);
+  const [editing, setEditing] = useState<PeopleMessage | null>(null);
+  const [editText, setEditText] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [firstUnread, setFirstUnread] = useState<string | null>(null);
+  const initialPositioned = useRef(false);
+  const followBottom = useRef(true);
+  const markedThrough = useRef("");
   const [botsBusy, setBotsBusy] = useState(0);
   const [replyTo, setReplyTo] = useState<PeopleMessage | null>(null);
   const [profile, setProfile] = useState<PersonInfo | null>(null);
@@ -208,45 +221,63 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   const [pending, setPending] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
 
+  const markVisibleRead = () => {
+    const el = scroller.current;
+    const until = latestRef.current;
+    if (!el || !until || !initialPositioned.current || document.hidden || !document.hasFocus() || el.scrollHeight - el.scrollTop - el.clientHeight > 48 || markedThrough.current === until) return;
+    markedThrough.current = until;
+    void peopleApi.markRead(threadId, until).catch(() => { markedThrough.current = ""; });
+  };
   const reloadInfo = () => peopleApi.info(threadId).then((i) => i && setInfo({ members: i.members || [], bots: i.bots || [] })).catch(() => {});
   useEffect(() => {
     let alive = true;
     void myUserId().then((id) => alive && setMe(id)).catch(() => {});
     void peopleApi.thread(threadId).then((t) => alive && setThread(t)).catch(() => {});
     void reloadInfo();
-    latestRef.current = "";
+    latestRef.current = ""; initialPositioned.current = false; markedThrough.current = ""; setFirstUnread(null);
     const cached = readThread<PeopleMessage>(threadId);
     if (cached.length) setMessages(cached);
-    void peopleApi.messages(threadId).then((m) => { if (alive) { setMessages(m); writeThread(threadId, m); latestRef.current = m[m.length - 1]?.created_at || new Date(0).toISOString(); } }).catch((e) => setError(userErrorText(e)));
-    void peopleApi.markRead(threadId);
+    void Promise.all([myUserId(), peopleApi.myReadMarker(threadId)]).then(async ([userId, marker]) => {
+      const m = await peopleApi.messages(threadId, marker.last_read_at);
+      if (!alive) return;
+      const unread = firstUnreadMessage(m, userId, marker);
+      setFirstUnread(unread); followBottom.current = !unread;
+      setMessages(m); writeThread(threadId, m); latestRef.current = m[m.length - 1]?.created_at || "";
+    }).catch((e) => alive && setError(userErrorText(e)));
     setText(readDraft(threadId));
     const loadMeta = () => { void peopleApi.readState(threadId).then((r) => alive && setReadState(r)); void peopleApi.reactions(threadId).then((r) => alive && setReactions(r)); };
     loadMeta();
     const merge = (incoming: PeopleMessage[]) => {
       if (!alive || !incoming.length) return;
-      setMessages((cur) => {
-        const ids = new Set(cur.map((x) => x.id));
-        const fresh = incoming.filter((m) => !ids.has(m.id));
-        return fresh.length ? [...cur, ...fresh].sort((a, b) => a.created_at.localeCompare(b.created_at)) : cur;
-      });
-      void peopleApi.markRead(threadId);
+      setMessages((cur) => mergeMessages(cur, incoming));
     };
-    const catchUp = () => { if (!document.hidden && latestRef.current) void peopleApi.since(threadId, latestRef.current).then(merge).catch(() => {}); };
+    const catchUp = () => { if (!document.hidden && latestRef.current) void Promise.all([peopleApi.messages(threadId), peopleApi.since(threadId, latestRef.current)]).then(([recent, fresh]) => merge([...recent, ...fresh])).catch(() => {}); };
     let live = false;
     const channel = supabase.channel(`people-thread-${threadId}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "people_messages", filter: `thread_id=eq.${threadId}` }, (p: any) => merge([p.new as PeopleMessage]))
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "people_thread_members", filter: `thread_id=eq.${threadId}` }, (p: any) => { const row = p.new as { user_id?: string; last_read_at?: string }; if (row?.user_id && row.last_read_at) setReadState((c) => ({ ...c, [row.user_id!]: row.last_read_at! })); })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "people_messages", filter: `thread_id=eq.${threadId}` }, (p: any) => merge([p.new as PeopleMessage]))
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "people_threads", filter: `id=eq.${threadId}` }, () => { void peopleApi.thread(threadId).then((t) => alive && setThread(t)); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "people_thread_members", filter: `thread_id=eq.${threadId}` }, (p: any) => { const row = p.new as { user_id?: string; last_read_at?: string }; if (row?.user_id && row.last_read_at) setReadState((c) => ({ ...c, ...Object.fromEntries([[row.user_id, row.last_read_at]]) })); void reloadInfo(); })
       .on("postgres_changes", { event: "*", schema: "public", table: "people_reactions", filter: `thread_id=eq.${threadId}` }, () => { void peopleApi.reactions(threadId).then((r) => alive && setReactions(r)); })
       .subscribe((status) => { live = status === "SUBSCRIBED"; if (live) catchUp(); });
     // Live updates are the fast path; a light catch-up covers dropped sockets and sleeping tabs.
     const timer = window.setInterval(() => { if (!live) catchUp(); }, 2500);
     const slow = window.setInterval(() => { catchUp(); if (!document.hidden) loadMeta(); }, 15000);
-    const onVisible = () => catchUp();
+    const onVisible = () => { catchUp(); markVisibleRead(); };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", onVisible);
     return () => { alive = false; window.clearInterval(timer); window.clearInterval(slow); document.removeEventListener("visibilitychange", onVisible); window.removeEventListener("focus", onVisible); void supabase.removeChannel(channel); };
   }, [threadId]);
-  useEffect(() => { scroller.current?.scrollTo({ top: scroller.current.scrollHeight }); }, [messages.length, botsBusy]);
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el || !messages.length || !latestRef.current) return;
+    if (!initialPositioned.current) {
+      initialPositioned.current = true;
+      if (firstUnread) el.querySelector("[data-first-unread]")?.scrollIntoView({ block: "start" });
+      else el.scrollTop = el.scrollHeight;
+    } else if (followBottom.current) el.scrollTop = el.scrollHeight;
+    markVisibleRead();
+  }, [messages, firstUnread, botsBusy]);
   useEffect(() => { writeDraft(threadId, text); }, [text, threadId]);
   useEffect(() => {
     const el = textarea.current;
@@ -306,6 +337,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   const lastMine = useMemo(() => [...messages].reverse().find((m) => m.sender_id === me)?.id, [messages, me]);
   const press = useRef<{ t: number; x: number; y: number } | null>(null);
   const rowProps = (m: PeopleMessage) => {
+    if (m.deleted_at) return {};
     const sw = swipe(m);
     const clear = () => { if (press.current) window.clearTimeout(press.current.t); press.current = null; };
     return {
@@ -360,6 +392,18 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
     } catch (e) { setText(typed); setReplyTo(quoted); if (picked.length) setPending(picked); setError(e instanceof Error ? e.message : "Not sent"); }
   };
 
+  const changeMessage = async (m: PeopleMessage, remove = false) => {
+    if (remove && !await askConfirm({ title: "Delete this message for everyone?", body: "Its contents will be removed for all members.", confirm: "Delete", danger: true })) return;
+    setSavingEdit(true); setError("");
+    try {
+      const original = splitReply(m.content);
+      const files = parseAttachments(original.body).files;
+      const updated = await peopleApi.changeMessage(m.id, remove ? "" : withReply(original.quote, withAttachments(files, editText.trim())), remove);
+      setMessages((cur) => mergeMessages(cur, [updated])); setEditing(null); setActionFor(null);
+      window.dispatchEvent(new Event("ceyo-people-changed"));
+    } catch (e) { setError(userErrorText(e)); } finally { setSavingEdit(false); }
+  };
+
   const shownBots = botAgents.slice(0, 6);
   const extraBots = Math.max(0, botAgents.length - shownBots.length);
   const headAvatars = isGroup
@@ -371,8 +415,8 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
   return <section className="cx-chat" aria-label={`${title} conversation`}>
     <header className="cx-head">
       <button type="button" className="cx-circle cx-glass" aria-label={ar ? "رجوع" : "Back"} onClick={onBack}><ChevronLeft size={22} /></button>
-      <button type="button" className="cx-title-pill cx-glass" disabled={!other} onClick={() => other && setProfile(other)} aria-label={other ? `Open ${title}'s profile` : undefined}>
-        {headAvatars}
+      <button type="button" className="cx-title-pill cx-glass" disabled={!other && !isGroup} onClick={() => isGroup ? setGroupDetails(true) : other && setProfile(other)} aria-label={isGroup ? "Open group information" : other ? `Open ${title}'s profile` : undefined}>
+        {isGroup && thread?.avatar_url ? <span className="pp-head-photo"><img src={thread.avatar_url} alt="" /></span> : headAvatars}
         <span className="pp-head-copy"><strong dir="auto">{title}</strong>{isGroup && <small dir="auto">{[...info.bots.map((b) => b.name), ...info.members.filter((p) => p.id !== me).map(personLabel), "You"].join(", ")}</small>}</span>
       </button>
       <div className="cx-head-actions">
@@ -380,6 +424,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       </div>
       {menuOpen && <div className="cx-scrim" onPointerDown={() => setMenuOpen(false)} />}
       {menuOpen && <div className="cx-pop cx-pop-down" role="menu">
+        {isGroup && <Button variant="ghost" onClick={() => { setMenuOpen(false); setGroupDetails(true); }}><Info size={19} />Group information</Button>}
         {isGroup && <button type="button" onClick={() => { setMenuOpen(false); setPanel("people"); }}><UserPlus size={19} />{ar ? "ضيف شخص" : "Add person"}</button>}
         {isGroup && <button type="button" onClick={() => { setMenuOpen(false); setPanel("bots"); }}><Bot size={19} />{ar ? "ضيف بوت" : "Add bot"}</button>}
         {isGroup && <button type="button" onClick={() => { setMenuOpen(false); void peopleApi.leave(threadId).then(() => { window.dispatchEvent(new Event("ceyo-people-changed")); onBack(); }); }}><LogOut size={19} />{ar ? "خروج" : "Leave"}</button>}
@@ -390,7 +435,7 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
 
     {error && <div className="cx-toast" data-tone="error" role="alert"><span><strong>{userErrorText(error)}</strong></span></div>}
 
-    <div className="cx-scroll pp-scroll" ref={scroller} {...peekProps}>
+    <div className="cx-scroll pp-scroll" ref={scroller} {...peekProps} onScroll={() => { const el = scroller.current; if (el) followBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48; markVisibleRead(); }}>
       {!messages.length ? (
         <div className="cx-empty"><p className="pp-muted">{info.bots.length ? (ar ? "اكتب رسالتك وكل البوتات هترد" : "Send a message and every bot will reply") : ar ? "ابدأ الكلام" : "Say hi"}</p></div>
       ) : (
@@ -403,10 +448,11 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
             const showDay = !prev || new Date(prev.created_at).toDateString() !== new Date(m.created_at).toDateString() || new Date(m.created_at).getTime() - new Date(prev.created_at).getTime() > 3600_000;
             const time = fmtTime(m.created_at);
             return <div key={m.id} className="cx-row-wrap">
+              {m.id === firstUnread && <p className="pp-unread-divider" data-first-unread="true" role="separator">New messages</p>}
               {showDay && <p className="cx-day">{new Date(m.created_at).toDateString() === new Date().toDateString() ? (ar ? "النهارده " : "Today ") : ""}{time}</p>}
               {mine ? (
                 <><div className="cx-row cx-row-user" {...rowProps(m)}>
-                  <div data-no-translate className="cx-bubble cx-bubble-user" dir="auto"><ReplyBody content={m.content} /><Reactions list={reactionsFor.get(m.id)} /></div>
+                  <div data-no-translate className="cx-bubble cx-bubble-user" dir="auto"><MessageContent message={m} /><Reactions list={m.deleted_at ? [] : reactionsFor.get(m.id)} /></div>
                   <span className="cx-time">{time}</span>
                 </div>
                 <SeenLine people={seenBy.get(m.id)} group={isGroup} last={m.id === lastMine} /></>
@@ -416,8 +462,8 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
                   <div className="cx-agent-body">
                     {isGroup && <span className="cx-author" dir="auto">{hit ? hit.bot.name : personLabel(person)}</span>}
                     <div data-no-translate className="cx-bubble cx-bubble-agent" dir="auto">
-                      {hit ? <FormattedAnswer text={m.content} onSend={(message) => { void send(message); }} /> : <ReplyBody content={m.content} />}
-                      <Reactions list={reactionsFor.get(m.id)} />
+                      {m.deleted_at ? <MessageContent message={m} /> : hit ? <FormattedAnswer text={m.content} onSend={(message) => { void send(message); }} /> : <MessageContent message={m} />}
+                      <Reactions list={m.deleted_at ? [] : reactionsFor.get(m.id)} />
                     </div>
                   </div>
                   <span className="cx-time">{time}</span>
@@ -466,10 +512,16 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
         <div className="pp-action-menu">
           <button type="button" onClick={() => { setReplyTo(actionFor); setActionFor(null); textarea.current?.focus(); }}><Reply size={18} />Reply</button>
           <button type="button" onClick={() => { void navigator.clipboard?.writeText(parseAttachments(splitReply(actionFor.content).body).text); setActionFor(null); }}><Copy size={18} />Copy</button>
+          {canChangeMessage(actionFor, me) && <>
+            <Button variant="ghost" onClick={() => { setEditing(actionFor); setEditText(parseAttachments(splitReply(actionFor.content).body).text); setActionFor(null); }}><Pencil size={18} />Edit</Button>
+            <Button variant="ghost" disabled={savingEdit} onClick={() => void changeMessage(actionFor, true)}><Trash2 size={18} />Delete for everyone</Button>
+          </>}
           <span className="pp-action-time">{new Date(actionFor.created_at).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}</span>
         </div>
       </div>
     </>}
+    {editing && <><div className="cx-sheet-scrim" onPointerDown={() => !savingEdit && setEditing(null)} /><section className="pp-edit-dialog" role="dialog" aria-modal="true" aria-label="Edit message"><header className="pp-detail-head"><h2>Edit message</h2><Button variant="ghost" size="icon" aria-label="Cancel editing" disabled={savingEdit} onClick={() => setEditing(null)}><X /></Button></header><textarea aria-label="Edited message" autoFocus rows={4} value={editText} maxLength={8000} onChange={(e) => setEditText(e.target.value)} />{error && <p className="pp-error" role="alert">{error}</p>}<Button disabled={savingEdit || (!editText.trim() && !parseAttachments(splitReply(editing.content).body).files.length)} onClick={() => void changeMessage(editing)}>Save changes</Button></section></>}
+    {groupDetails && thread && <GroupDetails thread={thread} members={info.members} bots={info.bots} userId={me} onClose={() => setGroupDetails(false)} onSaved={() => { void peopleApi.thread(threadId).then(setThread); window.dispatchEvent(new Event("ceyo-people-changed")); }} onPerson={(p) => { setGroupDetails(false); setProfile(p); }} />}
     {profile && <PersonProfileSheet person={profile} messages={messages} onClose={() => setProfile(null)} />}
     {panel && <>
       <div className="cx-sheet-scrim" onPointerDown={() => setPanel("")} />
@@ -484,6 +536,11 @@ export function PeopleChat({ lang, threadId, agents, onBack }: { lang: HubLang; 
       </div>
     </>}
   </section>;
+}
+
+function MessageContent({ message }: { message: PeopleMessage }) {
+  if (message.deleted_at) return <p className="pp-deleted-message"><Ban size={14} />This message was deleted</p>;
+  return <><ReplyBody content={message.content} />{message.edited_at && <small className="pp-edited-message">Edited</small>}</>;
 }
 
 function Reactions({ list }: { list?: PeopleReaction[] }) {

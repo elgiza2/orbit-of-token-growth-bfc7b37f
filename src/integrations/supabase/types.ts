@@ -1091,11 +1091,45 @@ export type Database = {
         }
         Relationships: []
       }
+      people_group_invites: {
+        Row: {
+          created_at: string
+          created_by: string
+          thread_id: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          thread_id: string
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          thread_id?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "people_group_invites_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: true
+            referencedRelation: "people_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       people_messages: {
         Row: {
           bot_id: string | null
           content: string
           created_at: string
+          deleted_at: string | null
+          edited_at: string | null
           id: string
           sender_id: string | null
           thread_id: string
@@ -1104,6 +1138,8 @@ export type Database = {
           bot_id?: string | null
           content: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           sender_id?: string | null
           thread_id: string
@@ -1112,6 +1148,8 @@ export type Database = {
           bot_id?: string | null
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           sender_id?: string | null
           thread_id?: string
@@ -1235,8 +1273,10 @@ export type Database = {
       }
       people_threads: {
         Row: {
+          avatar_url: string | null
           created_at: string
           created_by: string
+          description: string
           direct_key: string | null
           id: string
           kind: string
@@ -1244,8 +1284,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           created_by: string
+          description?: string
           direct_key?: string | null
           id?: string
           kind?: string
@@ -1253,8 +1295,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           created_by?: string
+          description?: string
           direct_key?: string | null
           id?: string
           kind?: string
@@ -2276,6 +2320,25 @@ export type Database = {
         Args: { p_thread: string }
         Returns: undefined
       }
+      edit_people_message: {
+        Args: { p_content: string; p_delete?: boolean; p_message: string }
+        Returns: {
+          bot_id: string | null
+          content: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          sender_id: string | null
+          thread_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "people_messages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       ensure_agent_trial: { Args: { p_user_id: string }; Returns: string }
       ensure_my_agent_trial: { Args: never; Returns: string }
       finish_agent_job: {
@@ -2309,7 +2372,12 @@ export type Database = {
         Returns: boolean
       }
       is_people_member: { Args: { _thread: string }; Returns: boolean }
+      join_people_invite: { Args: { p_token: string }; Returns: string }
       leave_people_thread: { Args: { p_thread: string }; Returns: undefined }
+      mark_people_read: {
+        Args: { p_thread: string; p_until: string }
+        Returns: undefined
+      }
       my_card_billing: { Args: never; Returns: Json }
       my_people_threads: { Args: never; Returns: Json }
       my_trial_tokens_today: { Args: never; Returns: number }
@@ -2334,6 +2402,10 @@ export type Database = {
         }
       }
       open_direct_thread: { Args: { p_username: string }; Returns: string }
+      people_group_invite: {
+        Args: { p_reset?: boolean; p_thread: string }
+        Returns: string
+      }
       people_media_allowed: {
         Args: { _name: string; _send: boolean }
         Returns: boolean
@@ -2346,8 +2418,16 @@ export type Database = {
         }[]
       }
       people_thread_info: { Args: { p_thread: string }; Returns: Json }
+      people_unread_counts: {
+        Args: never
+        Returns: {
+          thread_id: string
+          unread_count: number
+        }[]
+      }
       platform_touch_key_limits: { Args: { p_key_id: string }; Returns: Json }
       platform_user_entitlement: { Args: { p_user_id: string }; Returns: Json }
+      preview_people_invite: { Args: { p_token: string }; Returns: Json }
       read_agentsky_api_key: { Args: never; Returns: string }
       read_channel_credential: { Args: { p_name: string }; Returns: string }
       read_kashier_credentials: { Args: never; Returns: Json }
@@ -2440,6 +2520,15 @@ export type Database = {
       }
       tg_notify_role: {
         Args: { p_code: string; p_role: string; p_text: string }
+        Returns: undefined
+      }
+      update_people_group: {
+        Args: {
+          p_avatar: string
+          p_description: string
+          p_name: string
+          p_thread: string
+        }
         Returns: undefined
       }
       wallet_encryption_key: { Args: { p_candidate: string }; Returns: string }

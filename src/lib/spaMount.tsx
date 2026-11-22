@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useState, type ReactNode } from "react";
 import { BootFailed } from "@/components/common/BootFailed";
 import { landingRedirect } from "@/config/domains";
+import { captureGroupInvite } from "@/lib/people/inviteState";
 
 /**
  * Shared client mount for the Ceyo SPA, used by both "/" and the "/$"
@@ -32,6 +33,7 @@ function loadChunk<T>(load: () => Promise<T>): Promise<T> {
 const landingTo = typeof window !== "undefined" ? landingRedirect(window.location.host, window.location.pathname, window.location.search) : null;
 if (landingTo) window.location.replace(landingTo);
 const isClient = typeof window !== "undefined" && !landingTo;
+if (isClient) captureGroupInvite();
 const bootPromise = isClient ? loadChunk(() => import("@/lib/spaBoot")) : null;
 const appPromise = isClient ? loadChunk(() => import("@/lib/SpaApp")) : null;
 
